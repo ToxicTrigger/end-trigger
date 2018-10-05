@@ -4,6 +4,22 @@
 #include <vector>
 #include "component.h"
 #include <iostream>
+#include <memory>
+
+/*
+	간단한 FSM 구현 
+	사용법 :
+		1. fsm 객체를 생성한다.
+		2. fsm::add_state() 로 state 를 추가 해준다.
+		3. fsm::link_state() 로 두 state 를 이어주는 링크를 만든다.
+		4. fsm::simulate() 를 호출하여 now_state 를 갱신한다.
+	
+	알아두어야 하는 것:
+		각 링크의 ops 가 0 일 때 다음 상태로 전이한다.
+		이 ops 를 제어하고 싶을 땐 fsm::change_link() 를 호출한다.
+		해당 함수는 두 state 를 이어주는 link 의 ops 를 제어할 수 있도록 한다.
+
+*/
 
 namespace fsm 
 {
@@ -11,7 +27,7 @@ namespace fsm
 	{
 	public:
 		std::string name;
-
+		
 		inline state() noexcept
 		{
 			this->name = "Unknown";
@@ -30,14 +46,14 @@ namespace fsm
 		state *next;
 		int ops;
 
-		link()
+		inline link()
 		{
 			cur = nullptr;
 			next = nullptr;
 			ops = 1;
 		}
 
-		link(state *current, state *next) : link()
+		inline link(state *current, state *next) : link()
 		{
 			this->cur = current;
 			this->next = next;
@@ -52,7 +68,7 @@ namespace fsm
 		std::vector<link*> links;
 		state *now_state;
 		
-		map()
+		inline map()
 		{
 			states = std::vector<state*>();
 			links = std::vector<link*>();
@@ -61,7 +77,7 @@ namespace fsm
 			now_state = idle;
 		}
 
-		map(state *def_state) : map()
+		inline map(state *def_state) : map()
 		{
 			// inited state idle
 			add_state(def_state);
@@ -158,7 +174,6 @@ namespace fsm
 		void update(float delta) noexcept
 		{
 			simulate();
-			std::cout << "now_state : " << now_state->name << std::endl;
 		}
 
 		~map()

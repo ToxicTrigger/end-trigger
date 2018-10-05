@@ -16,9 +16,6 @@
     <Filter Include="헤더 파일\fsm">
       <UniqueIdentifier>{03fabaa3-5a5e-48c4-b0e1-3cd64e57eaef}</UniqueIdentifier>
     </Filter>
-    <Filter Include="소스 파일\fsm">
-      <UniqueIdentifier>{9d72dc68-8513-478c-801a-49cf35f296c5}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Miner.h">
@@ -27,7 +24,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
-      <Filter>소스 파일\fsm</Filter>
+      <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -19,9 +19,6 @@
     <Filter Include="헤더 파일\component">
       <UniqueIdentifier>{c9fd5e09-ea66-4b32-a791-441fc13bacf3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="헤더 파일\test">
-      <UniqueIdentifier>{7cae4ba7-b126-4751-9066-6959567e5c5e}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
