@@ -14,27 +14,20 @@
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
     <Filter Include="헤더 파일\fsm">
-      <UniqueIdentifier>{f4354870-b60f-4735-ba96-b29c9479e243}</UniqueIdentifier>
+      <UniqueIdentifier>{03fabaa3-5a5e-48c4-b0e1-3cd64e57eaef}</UniqueIdentifier>
     </Filter>
-    <Filter Include="헤더 파일\component">
-      <UniqueIdentifier>{c9fd5e09-ea66-4b32-a791-441fc13bacf3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="헤더 파일\test">
-      <UniqueIdentifier>{7cae4ba7-b126-4751-9066-6959567e5c5e}</UniqueIdentifier>
+    <Filter Include="소스 파일\fsm">
+      <UniqueIdentifier>{9d72dc68-8513-478c-801a-49cf35f296c5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include=".gitignore" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="component.h">
-      <Filter>헤더 파일\component</Filter>
-    </ClInclude>
-    <ClInclude Include="component_world.h">
-      <Filter>헤더 파일\component</Filter>
-    </ClInclude>
-    <ClInclude Include="fsm.h">
+    <ClInclude Include="Miner.h">
       <Filter>헤더 파일\fsm</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>소스 파일\fsm</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
