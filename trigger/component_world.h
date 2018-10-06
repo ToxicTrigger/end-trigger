@@ -4,11 +4,6 @@
 #include <chrono>
 #include <thread>
 
-#if _WIN32
-#include <stdlib.h>
-#endif
-
-
 #include "component.h"
 
 using namespace std;
@@ -24,14 +19,20 @@ private:
 	chrono::duration<float> delta_time;
 	chrono::duration<float> run_time;
 	thread main_thread;
+	bool use_thread;
 
 public:
 	//Build a new World
-	component_world()
+	component_world(bool UseThread)
 	{
 		components = list<component*>();
 		start_time = time::now();
-		main_thread = thread(&component_world::update, this, delta_time.count());
+
+		use_thread = UseThread;
+		if (UseThread)
+		{
+			main_thread = thread(&component_world::update, this, delta_time.count());
+		}
 	}
 
 	inline float get_delta_time() noexcept
@@ -71,7 +72,7 @@ public:
 
 	component* get(unsigned int index)
 	{
-		//TODO:: ÀÎµ¦½º ³Ñ¹ö·Î °¡Á®¿À±â!
+		//TODO:: ï¿½Îµï¿½ï¿½ï¿½ ï¿½Ñ¹ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½!
 		if (index >= components.size()) return nullptr;
 
 		auto i = components.begin();
@@ -88,25 +89,25 @@ public:
 	//simulating world
 	void update(float delta) noexcept
 	{
-		while (this->active)
+		while (this->active && use_thread)
 		{
-			run_time = chrono::duration_cast<chrono::duration<float>>(time::now() - start_time);
-			auto t = time::now();
-
-			for (auto i : components)
-			{
-				if (i->active)
-				{
-					i->update(this->delta_time.count());
-				}
-			}
-
-#if _WIN32
-			system("cls");
-#endif
-
-			delta_time = chrono::duration_cast<chrono::duration<float>>(time::now() - t);
+			update_all();
 		}
+	}
+
+	void update_all()
+	{
+		run_time = chrono::duration_cast<chrono::duration<float>>(time::now() - start_time);
+		auto t = time::now();
+
+		for (auto i : components)
+		{
+			if (i->active)
+			{
+				i->update(this->delta_time.count());
+			}
+		}
+		delta_time = chrono::duration_cast<chrono::duration<float>>(time::now() - t);
 	}
 
 	~component_world()
