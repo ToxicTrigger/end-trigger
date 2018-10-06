@@ -6,7 +6,7 @@ using namespace std;
 auto main() -> int
 {
 	Miner *miner = new Miner();
-	component_world *world = new component_world();
+	component_world *world = new component_world(true);
 	world->add(miner);
 
 	getchar();

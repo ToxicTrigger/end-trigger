@@ -31,7 +31,7 @@ public:
 
 	void update(float delta) noexcept
 	{
-		if (map->now_state->name == "GoHome")
+		if (map->get_now_state()->name == "GoHome")
 		{
 			if (money >= 0)
 			{
@@ -43,7 +43,7 @@ public:
 			}
 		}
 
-		if (map->now_state->name == "EnterMineAndDig")
+		if (map->get_now_state()->name == "EnterMineAndDig")
 		{
 			money += delta;
 
@@ -62,7 +62,7 @@ public:
 			}
 		}
 
-		if (map->now_state->name == "QuenchThist")
+		if (map->get_now_state()->name == "QuenchThist")
 		{
 			if (thirst >= 0)
 			{
@@ -74,7 +74,7 @@ public:
 			}
 		}
 
-		if (map->now_state->name == "VisitBank")
+		if (map->get_now_state()->name == "VisitBank")
 		{
 			
 			if (money >= 0)
@@ -95,6 +95,7 @@ public:
 		std::cout << "Miner money : " << money << std::endl;
 		std::cout << "Miner TotalMoney : " << totalMoney << std::endl;
 		std::cout << "Miner thirst : " << thirst << std::endl;
-		std::cout << "Miner State : " << map->now_state->name << std::endl;
+		std::cout << "Miner State : " << map->get_now_state()->name << std::endl;
+		map->get_now_state() = new fsm::state();
 	}
 };

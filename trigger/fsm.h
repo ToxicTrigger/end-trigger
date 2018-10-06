@@ -46,14 +46,14 @@ namespace fsm
 		state *next;
 		int ops;
 
-		inline link()
+		inline link( ) noexcept
 		{
 			cur = nullptr;
 			next = nullptr;
 			ops = 1;
 		}
 
-		inline link(state *current, state *next) : link()
+		inline link(state *current, state *next): link()
 		{
 			this->cur = current;
 			this->next = next;
@@ -63,11 +63,12 @@ namespace fsm
 
 	class map : public component
 	{
-	public:
+	private:
+		state * now_state;
 		std::vector<state*> states;
 		std::vector<link*> links;
-		state *now_state;
-		
+
+	public:
 		inline map()
 		{
 			states = std::vector<state*>();
@@ -104,7 +105,7 @@ namespace fsm
 			return nullptr;
 		}
 
-		inline state* get_state(state *state)
+		inline state* get_state(state *state) const
 		{
 			for (auto i : states)
 			{
@@ -127,12 +128,23 @@ namespace fsm
 			return true;
 		}
 
+		inline const state* get_now_state() const
+		{
+			return now_state;
+		}
+
 		inline void add_state(state *new_state) noexcept
 		{
 			if (new_state != nullptr)
 			{
 				states.push_back(new_state);
 			}
+		}
+
+		inline void add_state(std::string state_name) noexcept
+		{
+			state *tmp = new state(state_name);
+			states.push_back(tmp);
 		}
 
 		inline void simulate() noexcept
