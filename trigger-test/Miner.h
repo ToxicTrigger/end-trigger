@@ -96,6 +96,5 @@ public:
 		std::cout << "Miner TotalMoney : " << totalMoney << std::endl;
 		std::cout << "Miner thirst : " << thirst << std::endl;
 		std::cout << "Miner State : " << map->get_now_state()->name << std::endl;
-		map->get_now_state() = new fsm::state();
 	}
 };
