@@ -10,6 +10,5 @@ auto main() -> int
 	world->add(miner);
 
 	getchar();
-	
 	return 0;
 }

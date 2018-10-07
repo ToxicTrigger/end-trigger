@@ -19,9 +19,6 @@
     <Filter Include="헤더 파일\component">
       <UniqueIdentifier>{c9fd5e09-ea66-4b32-a791-441fc13bacf3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="헤더 파일\imgui">
-      <UniqueIdentifier>{5bb1b71b-ace0-4cc1-9c2b-6df87a5f9708}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
@@ -36,37 +33,5 @@
     <ClInclude Include="fsm.h">
       <Filter>헤더 파일\fsm</Filter>
     </ClInclude>
-    <ClInclude Include="imconfig.h">
-      <Filter>헤더 파일\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="imgui.h">
-      <Filter>헤더 파일\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="imgui_internal.h">
-      <Filter>헤더 파일\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="imstb_rectpack.h">
-      <Filter>헤더 파일\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="imstb_textedit.h">
-      <Filter>헤더 파일\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="imstb_truetype.h">
-      <Filter>헤더 파일\imgui</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="imgui.cpp">
-      <Filter>헤더 파일\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="imgui_demo.cpp">
-      <Filter>헤더 파일\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="imgui_draw.cpp">
-      <Filter>헤더 파일\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="imgui_widgets.cpp">
-      <Filter>헤더 파일\imgui</Filter>
-    </ClCompile>
   </ItemGroup>
 </Project>

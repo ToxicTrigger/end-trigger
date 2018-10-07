@@ -1,5 +1,6 @@
 #pragma once
 #include "../trigger/fsm.h"
+#include <stdlib.h>
 
 class Miner : public component
 {
@@ -96,5 +97,6 @@ public:
 		std::cout << "Miner TotalMoney : " << totalMoney << std::endl;
 		std::cout << "Miner thirst : " << thirst << std::endl;
 		std::cout << "Miner State : " << map->get_now_state()->name << std::endl;
+		system("cls");
 	}
 };
