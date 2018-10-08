@@ -9,6 +9,8 @@
 #include <dxgi1_4.h>
 #include <tchar.h>
 #include "../trigger/texture.h"
+#include "../trigger/component_world.h"
+#include "../trigger-test/Miner.h"
 
 #define DX12_ENABLE_DEBUG_LAYER     0
 
@@ -36,6 +38,9 @@ static IDXGISwapChain3*             g_pSwapChain = NULL;
 static HANDLE                       g_hSwapChainWaitableObject = NULL;
 static ID3D12Resource*              g_mainRenderTargetResource[NUM_BACK_BUFFERS] = {};
 static D3D12_CPU_DESCRIPTOR_HANDLE  g_mainRenderTargetDescriptor[NUM_BACK_BUFFERS] = {};
+
+static component_world *world;
+static std::vector<Miner*> miners;
 
 void CreateRenderTarget()
 {
@@ -304,6 +309,10 @@ int main(int, char**)
     //ImGui::StyleColorsClassic();
 
 	trigger::dx::make_tex("../tools/ui_heart_dot.png");
+
+	world = new component_world(true);
+	miners = std::vector<Miner*>();
+	
 	
 
     // Load Fonts
@@ -348,14 +357,14 @@ int main(int, char**)
         ImGui::NewFrame();
 
         // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-        if (show_demo_window)
-            ImGui::ShowDemoWindow(&show_demo_window);
+        //if (show_demo_window) ImGui::ShowDemoWindow(&show_demo_window);
 
         // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
         {
-            static float f = 0.0f;
-            static int counter = 0;
-
+            //static float f = 0.0f;
+            //static int counter = 0;
+			/*
+			
             ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
 
             ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
@@ -372,7 +381,30 @@ int main(int, char**)
 
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
             ImGui::End();
+			*/
         }
+
+		static int counter = 0;
+		ImGui::Begin("Miner Pool");
+		ImGui::Text("Miner count : %d", counter);
+		if (ImGui::Button("Wake Up"))
+		{
+			counter += 1;
+			auto t = new Miner();
+			world->add(t);
+			miners.push_back(t);
+		}
+		ImGui::End();
+
+		for (int w = 0; w < counter; ++w)
+		{
+			std::string mine_title = "Miner #";
+			mine_title += std::to_string(w);
+			ImGui::Begin(mine_title.c_str());
+			ImGui::Text("Miner State : %s", miners[w]->get_now_state().c_str());
+			ImGui::End();
+		}
+
 
         // 3. Show another simple window.
         if (show_another_window)
@@ -383,6 +415,7 @@ int main(int, char**)
                 show_another_window = false;
             ImGui::End();
         }
+		
 
         // Rendering
         FrameContext* frameCtxt = WaitForNextFrameResources();
