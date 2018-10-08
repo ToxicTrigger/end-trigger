@@ -8,9 +8,10 @@ class Miner : public component
 	float time;
 	float money;
 	float thirst;
+	
+public:
 	float totalMoney;
 
-public:
 	Miner()
 	{
 		map = new fsm::map(new fsm::state("GoHome"));
@@ -28,6 +29,11 @@ public:
 		money = 3;
 		time = 0;
 		thirst = 0;
+	}
+
+	std::string get_now_state()
+	{
+		return map->get_now_state()->name;
 	}
 
 	void update(float delta) noexcept
