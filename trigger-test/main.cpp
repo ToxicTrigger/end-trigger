@@ -6,9 +6,11 @@ using namespace std;
 auto main() -> int
 {
 	Miner *miner = new Miner();
-	component_world *world = new component_world(true);
-	world->add(miner);
-
+	component_world *world = new component_world( true );
+	world->add( miner );
+	world->get<Miner>()->active = false;
+	world->clean_component();
 	getchar();
+
 	return 0;
 }
