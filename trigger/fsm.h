@@ -26,12 +26,16 @@ namespace trigger
 	{
 		class state
 		{
-		public:
 			std::string name;
-
-			inline state( std::string name = "Unknown" ) noexcept
+		public:
+			explicit inline state( std::string name = "Unknown" ) noexcept
 			{
 				this->name = name;
+			}
+
+			inline std::string const get_name() const noexcept
+			{
+				return this->name;
 			}
 
 			//상태 진입시 호출됩니다.
@@ -47,24 +51,41 @@ namespace trigger
 
 		class link
 		{
-		public:
+		private:
 			std::unique_ptr<state> cur;
 			std::unique_ptr<state> next;
 			int ops;
 
-			inline link() noexcept
+		public:
+			explicit inline link() noexcept
 			{
 				cur = nullptr;
 				next = nullptr;
 				ops = 1;
 			}
 
-			inline link( state *current, state *next ) : link()
+			explicit inline link( state *current, state *next ) : link()
 			{
 				this->cur._Myptr() = current;
 				this->next._Myptr() = next;
 			}
 
+			inline const state* const get_current_state() const noexcept
+			{
+				return this->cur.get();
+			};
+			inline const state* const get_next_state() const noexcept
+			{
+				return this->next.get();
+			};
+			inline constexpr int const get_ops() const noexcept
+			{
+				return this->ops;
+			};
+			inline constexpr void set_ops( int op ) noexcept
+			{
+				ops = op;
+			};
 		};
 
 		class map : public component
@@ -74,6 +95,26 @@ namespace trigger
 			std::list<state*> states;
 			std::list<link*> links;
 
+			inline void simulate( float delta ) noexcept
+			{
+				now_state->update( delta );
+				for( auto i : this->links )
+				{
+					if( i->get_current_state()->get_name() == now_state->get_name() )
+					{
+						// ops == 0 , move now_state between link
+						if( i->get_ops() == 0 )
+						{
+							i->set_ops( i->get_ops() + 1 );
+							now_state->end_state();
+							now_state._Myptr() = const_cast<state*>(i->get_next_state());
+							now_state->begin_state();
+							return;
+						}
+					}
+				}
+			}
+
 		public:
 			inline map()
 			{
@@ -82,7 +123,7 @@ namespace trigger
 
 				auto idle = new state( "idle" );
 				add_state( idle );
-				now_state = std::make_unique<state>(idle->name);
+				now_state = std::make_unique<state>( idle->get_name() );
 			}
 
 			inline map( state *def_state ) : map()
@@ -90,15 +131,15 @@ namespace trigger
 				// inited state idle
 				add_state( def_state );
 				link *def = new link( now_state.get(), def_state );
-				def->ops = 0;
+				def->set_ops( 0 );
 				links.push_back( def );
 			}
 
-			inline state* get_state( std::string name ) const noexcept
+			inline state* const get_state( std::string name ) const noexcept
 			{
 				for( auto i : states )
 				{
-					if( i->name == name )
+					if( i->get_name() == name )
 					{
 						return i;
 					}
@@ -106,7 +147,7 @@ namespace trigger
 				return nullptr;
 			}
 
-			inline state* get_state( state *state ) const
+			inline state* get_state( state *state ) const noexcept
 			{
 				for( auto i : states )
 				{
@@ -125,16 +166,15 @@ namespace trigger
 				}
 				link *tmp = new link( a, b );
 				this->links.push_back( tmp );
-
 				return true;
 			}
 
-			inline const state* get_now_state() const
+			inline const state* const get_now_state() const noexcept
 			{
 				return now_state.get();
 			}
 
-			inline void add_state( state *new_state ) noexcept
+			inline constexpr void add_state( state *new_state ) noexcept
 			{
 				if( new_state != nullptr )
 				{
@@ -142,7 +182,7 @@ namespace trigger
 				}
 			}
 
-			inline void add_state( std::string state_name ) noexcept
+			inline const void add_state( std::string state_name ) noexcept
 			{
 				state *tmp = new state( state_name );
 				states.push_back( tmp );
@@ -153,19 +193,21 @@ namespace trigger
 				if( state != nullptr )
 				{
 					states.remove( state );
+					return true;
 				}
+				return false;
 			}
 
 			inline bool delete_state( std::string name ) noexcept
 			{
-				if( delete_state( get_state( name )) )
+				if( delete_state( get_state( name ) ) )
 				{
 					return true;
 				}
 				return false;
 			}
 
-			inline link* get_link( std::string state1, std::string state2 )
+			inline const link* const get_link( std::string state1, std::string state2 ) const noexcept
 			{
 				state *tmp = get_state( state1 );
 				state *tmp2 = get_state( state2 );
@@ -173,7 +215,7 @@ namespace trigger
 				{
 					for( auto i : links )
 					{
-						if( i->cur->name == tmp->name && i->next->name == tmp2->name )
+						if( i->get_current_state()->get_name() == tmp->get_name() && i->get_current_state()->get_name() == tmp2->get_name() )
 						{
 							return i;
 						}
@@ -184,31 +226,13 @@ namespace trigger
 
 			inline bool delete_link( std::string state1, std::string state2 ) noexcept
 			{
-				if( get_link( state1, state2 ) != nullptr )
+				auto t = get_link( state1, state2 );
+				if( t != nullptr )
 				{
+					links.remove( const_cast<link*>(t) );
 					return true;
 				}
 				return false;
-			}
-
-			inline void simulate( float delta ) noexcept
-			{
-				now_state->update( delta );
-				for( auto i : this->links )
-				{
-					if( i->cur->name == now_state->name )
-					{
-						// ops == 0 , move now_state between link
-						if( i->ops == 0 )
-						{
-							i->ops += 1;
-							now_state->end_state();
-							now_state._Myptr() = i->next._Myptr();
-							now_state->begin_state();
-							return;
-						}
-					}
-				}
 			}
 
 			inline bool change_link( std::string state1, std::string state2, unsigned int op ) const noexcept
@@ -219,9 +243,10 @@ namespace trigger
 				{
 					for( auto i : links )
 					{
-						if( i->cur->name == tmp->name && i->next->name == tmp2->name )
+						if( i->get_current_state()->get_name() == tmp->get_name()
+							&& i->get_next_state()->get_name() == tmp2->get_name() )
 						{
-							i->ops = op;
+							i->set_ops( 0 );
 						}
 					}
 					return true;
@@ -229,7 +254,7 @@ namespace trigger
 				return false;
 			}
 
-			void update( float delta ) noexcept
+			inline void update( float delta ) noexcept
 			{
 				simulate( delta );
 			}
@@ -239,7 +264,6 @@ namespace trigger
 				if( now_state != nullptr )
 				{
 					now_state.release();
-					//delete now_state;
 				}
 
 				states.clear();

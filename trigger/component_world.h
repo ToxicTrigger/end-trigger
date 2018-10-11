@@ -3,6 +3,7 @@
 #include <memory>
 #include <chrono>
 #include <thread>
+#include <mutex>
 
 #include "component.h"
 
@@ -22,6 +23,7 @@ namespace trigger
 		chrono::duration<float> run_time;
 		thread main_thread;
 		bool use_thread;
+		mutex lock;
 
 	public:
 		//Build a new World
@@ -79,12 +81,14 @@ namespace trigger
 			std::advance( i, index );
 			return *i;
 		}
-
+		
 		inline constexpr bool delete_component( component *target ) noexcept
 		{
 			if( target != nullptr && components.size() != 0)
 			{
+				lock.lock();
 				components.remove( target );
+				lock.unlock();
 				return true;
 			}
 			return false;
@@ -116,28 +120,32 @@ namespace trigger
 		//simulating world
 		inline void update( float delta ) noexcept
 		{
-			if( components.size() != 0 )
+			while( this->active && use_thread )
 			{
-				while( this->active && use_thread )
-				{
-					update_all();
-				}
+				update_all();
 			}
 		}
 
 		inline void update_all()
 		{
-			run_time = chrono::duration_cast<chrono::duration<float>>(time::now() - start_time);
-			auto t = time::now();
-
-			for( auto i : components )
+			if( components.size() != 0 )
 			{
-				if( i->active )
+				run_time = chrono::duration_cast<chrono::duration<float>>(time::now() - start_time);
+				auto t = time::now();
+				lock.lock();
+				for( auto i : components )
 				{
-					i->update( this->delta_time.count() );
+					if( i != nullptr )
+					{
+						if( i->active )
+						{
+							i->update( this->delta_time.count() );
+						}
+					}
 				}
+				lock.unlock();
+				delta_time = chrono::duration_cast<chrono::duration<float>>(time::now() - t);
 			}
-			delta_time = chrono::duration_cast<chrono::duration<float>>(time::now() - t);
 		}
 
 		~component_world()

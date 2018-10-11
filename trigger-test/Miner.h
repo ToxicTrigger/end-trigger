@@ -7,10 +7,8 @@ using namespace trigger;
 class GoHome : public fsm::state
 {
 public:
-
 	GoHome() : state( "GoHome" )
 	{
-	
 	}
 
 	void begin_state()
@@ -27,7 +25,6 @@ public:
 	}
 };
 
-
 class Miner : public trigger::component
 {
 	trigger::fsm::map *map;
@@ -37,6 +34,7 @@ class Miner : public trigger::component
 
 public:
 	float totalMoney;
+	std::string name;
 
 	Miner()
 	{
@@ -54,16 +52,17 @@ public:
 		money = 3;
 		time = 0;
 		thirst = 0;
+
 	}
 
 	std::string get_now_state()
 	{
-		return map->get_now_state()->name;
+		return map->get_now_state()->get_name();
 	}
 
 	void update( float delta ) noexcept
 	{
-		if( map->get_now_state()->name == "GoHome" )
+		if( map->get_now_state()->get_name() == "GoHome" )
 		{
 			if( money >= 0 )
 			{
@@ -75,7 +74,7 @@ public:
 			}
 		}
 
-		if( map->get_now_state()->name == "EnterMineAndDig" )
+		if( map->get_now_state()->get_name() == "EnterMineAndDig" )
 		{
 			money += delta;
 
@@ -94,7 +93,7 @@ public:
 			}
 		}
 
-		if( map->get_now_state()->name == "QuenchThist" )
+		if( map->get_now_state()->get_name() == "QuenchThist" )
 		{
 			if( thirst >= 0 )
 			{
@@ -106,7 +105,7 @@ public:
 			}
 		}
 
-		if( map->get_now_state()->name == "VisitBank" )
+		if( map->get_now_state()->get_name() == "VisitBank" )
 		{
 
 			if( money >= 0 )
@@ -122,12 +121,12 @@ public:
 		}
 
 		time += delta;
-		map->simulate(delta);
+		map->update( delta );
 		std::cout << "Miner time : " << time << std::endl;
 		std::cout << "Miner money : " << money << std::endl;
 		std::cout << "Miner TotalMoney : " << totalMoney << std::endl;
 		std::cout << "Miner thirst : " << thirst << std::endl;
-		std::cout << "Miner State : " << map->get_now_state()->name << std::endl;
+		std::cout << "Miner State : " << map->get_now_state()->get_name() << std::endl;
 		system( "cls" );
 	}
 };

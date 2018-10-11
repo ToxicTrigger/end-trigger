@@ -6,6 +6,7 @@ namespace trigger
 	{
 	public:
 		bool active = true;
-		virtual void update( float delta ) noexcept = 0;
+		virtual void update( float delta ) noexcept
+		{};
 	};
 }
