@@ -1,8 +1,11 @@
 #pragma once
 
-class component
+namespace trigger
 {
-public:
-	bool active = true;
-	virtual void update(float delta) noexcept = 0;
-};
+	class component
+	{
+	public:
+		bool active = true;
+		virtual void update( float delta ) noexcept = 0;
+	};
+}
