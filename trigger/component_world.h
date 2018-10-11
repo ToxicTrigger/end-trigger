@@ -25,7 +25,7 @@ namespace trigger
 
 	public:
 		//Build a new World
-		component_world( bool UseThread )
+		inline component_world( bool UseThread )
 		{
 			components = list<component*>();
 			start_time = time::now();
@@ -43,7 +43,7 @@ namespace trigger
 		}
 
 		template<typename T>
-		T* get()
+		inline constexpr T* get()
 		{
 			for( auto i : components )
 			{
@@ -56,9 +56,8 @@ namespace trigger
 			return nullptr;
 		};
 
-
 		template<typename T>
-		list<T*> get_components()
+		inline constexpr list<T*> get_components()
 		{
 			list<T*> tmp = list<T*>();
 			for( auto i : components )
@@ -72,7 +71,7 @@ namespace trigger
 			return tmp;
 		};
 
-		component* get( unsigned int index )
+		inline component* get( unsigned int index ) noexcept
 		{
 			if( index >= components.size() ) return nullptr;
 
@@ -81,22 +80,52 @@ namespace trigger
 			return *i;
 		}
 
-		//add component in world-component-list
-		void add( component * com )
+		inline constexpr bool delete_component( component *target ) noexcept
 		{
-			components.push_back( com );
+			if( target != nullptr && components.size() != 0)
+			{
+				components.remove( target );
+				return true;
+			}
+			return false;
 		}
 
-		//simulating world
-		void update( float delta ) noexcept
+		//add component in world-component-list
+		inline constexpr void add( component * com ) noexcept
 		{
-			while( this->active && use_thread )
+			if( com != nullptr ) components.push_back( com );
+		}
+
+		inline void clean_component() noexcept
+		{
+			if( components.size() != 0 )
 			{
-				update_all();
+				auto delete_list = std::list<component*>();
+				for( auto i : components )
+				{
+					if( !i->active ) delete_list.push_back( i );
+				}
+
+				for( auto i : delete_list )
+				{
+					components.remove( i );
+				}
 			}
 		}
 
-		void update_all()
+		//simulating world
+		inline void update( float delta ) noexcept
+		{
+			if( components.size() != 0 )
+			{
+				while( this->active && use_thread )
+				{
+					update_all();
+				}
+			}
+		}
+
+		inline void update_all()
 		{
 			run_time = chrono::duration_cast<chrono::duration<float>>(time::now() - start_time);
 			auto t = time::now();
@@ -113,6 +142,7 @@ namespace trigger
 
 		~component_world()
 		{
+			components.clear();
 			main_thread.join();
 		}
 	};

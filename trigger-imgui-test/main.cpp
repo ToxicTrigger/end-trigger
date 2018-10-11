@@ -11,6 +11,7 @@
 #include "../trigger/texture.h"
 #include "../trigger/component_world.h"
 #include "../trigger-test/Miner.h"
+#include <vector>
 
 #define DX12_ENABLE_DEBUG_LAYER     0
 
@@ -312,7 +313,7 @@ int main(int, char**)
 
 	world = new component_world(true);
 	miners = std::vector<Miner*>();
-	
+
 	
 
     // Load Fonts
@@ -376,18 +377,6 @@ int main(int, char**)
 			ImGui::Text("Miner State : %s", miners[w]->get_now_state().c_str());
 			ImGui::End();
 		}
-
-
-        // 3. Show another simple window.
-        if (show_another_window)
-        {
-            ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-            ImGui::Text("Hello from another window!");
-            if (ImGui::Button("Close Me"))
-                show_another_window = false;
-            ImGui::End();
-        }
-		
 
         // Rendering
         FrameContext* frameCtxt = WaitForNextFrameResources();
