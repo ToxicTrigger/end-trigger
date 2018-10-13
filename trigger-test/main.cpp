@@ -9,10 +9,10 @@ auto main() -> int
 	miner->name = "1";
 	auto miner1 = make_unique<Miner>();
 	miner1->name = "2";
-	component_world *world = new component_world( true );
-	world->add( miner.get() );	
-	world->add( miner1.get() );
-	world->delete_component( miner.get() );
+	trigger::component_world *world = new trigger::component_world( true );
+	world->add( miner._Myptr() );	
+	world->add( miner1._Myptr() );
+
 	getchar();
 
 	return 0;

@@ -94,16 +94,6 @@ namespace trigger
 			return false;
 		}
 
-		inline constexpr bool delete_component( component *target ) noexcept
-		{
-			if( target != nullptr && components.size() != 0)
-			{
-				components.remove( target );
-				return true;
-			}
-			return false;
-		}
-
 		//add component in world-component-list
 		inline constexpr void add( component * com ) noexcept
 		{
@@ -130,11 +120,14 @@ namespace trigger
 		//simulating world
 		inline void update( float delta ) noexcept
 		{
-			if( components.size() != 0 )
+			while( use_thread )
 			{
-				while( this->active && use_thread )
+				if( components.size() != 0 )
 				{
-					update_all();
+					while( this->active && use_thread )
+					{
+						update_all();
+					}
 				}
 			}
 		}

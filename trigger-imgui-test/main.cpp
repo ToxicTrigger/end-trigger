@@ -40,7 +40,7 @@ static HANDLE                       g_hSwapChainWaitableObject = NULL;
 static ID3D12Resource*              g_mainRenderTargetResource[NUM_BACK_BUFFERS] = {};
 static D3D12_CPU_DESCRIPTOR_HANDLE  g_mainRenderTargetDescriptor[NUM_BACK_BUFFERS] = {};
 
-static component_world *world;
+static trigger::component_world *world;
 static std::vector<Miner*> miners;
 
 void CreateRenderTarget()
@@ -311,7 +311,7 @@ int main(int, char**)
 
 	trigger::dx::make_tex("../tools/ui_heart_dot.png");
 
-	world = new component_world(true);
+	world = new trigger::component_world(true);
 	miners = std::vector<Miner*>();
 
 	

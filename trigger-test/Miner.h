@@ -2,12 +2,10 @@
 #include "../trigger/fsm.h"
 #include <stdlib.h>
 
-using namespace trigger;
-
-class GoHome : public fsm::state
+class GoHome : public trigger::fsm::state
 {
 public:
-	GoHome() : state( "GoHome" )
+	GoHome() : trigger::fsm::state( "GoHome" )
 	{
 	}
 
@@ -38,10 +36,10 @@ public:
 
 	Miner()
 	{
-		map = new fsm::map( new GoHome() );
-		map->add_state( new fsm::state( "EnterMineAndDig" ) );
-		map->add_state( new fsm::state( "VisitBank" ) );
-		map->add_state( new fsm::state( "QuenchThist" ) );
+		map = new trigger::fsm::map( new GoHome() );
+		map->add_state( new trigger::fsm::state( "EnterMineAndDig" ) );
+		map->add_state( new trigger::fsm::state( "VisitBank" ) );
+		map->add_state( new trigger::fsm::state( "QuenchThist" ) );
 
 		map->link_state( "GoHome", "EnterMineAndDig" );
 		map->link_state( "EnterMineAndDig", "VisitBank" );
