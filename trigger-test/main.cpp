@@ -5,14 +5,15 @@ using namespace std;
 
 auto main() -> int
 {
-	auto miner = make_unique<Miner>();
-	miner->name = "1";
-	auto miner1 = make_unique<Miner>();
-	miner1->name = "2";
-	trigger::component_world *world = new trigger::component_world( true );
-	world->add( miner._Myptr() );	
-	world->add( miner1._Myptr() );
+	auto start = std::chrono::high_resolution_clock::now();
+	auto map = new trigger::fsm::map();
 
+	start = std::chrono::high_resolution_clock::now();
+	for( int i = 0; i < 10000; ++i )
+	{
+		map->add_state( "Hello" );
+	}
+	cout << (std::chrono::high_resolution_clock::now() - start).count() << endl;
 	getchar();
 
 	return 0;

@@ -15,7 +15,7 @@ public:
 
 	void update(float delta)
 	{
-		std::cout << "ImAlive" << std::endl;
+		//std::cout << "ImAlive" << std::endl;
 	}
 
 	void end_state()
@@ -55,12 +55,13 @@ public:
 
 	std::string get_now_state()
 	{
-		return map->get_now_state()->get_name();
+		return map->get_now_state().get_name();
 	}
 
 	void update( float delta ) noexcept
 	{
-		if( map->get_now_state()->get_name() == "GoHome" )
+		std::string state_name = map->get_now_state().get_name();
+		if( state_name == "GoHome" )
 		{
 			if( money >= 0 )
 			{
@@ -72,7 +73,7 @@ public:
 			}
 		}
 
-		if( map->get_now_state()->get_name() == "EnterMineAndDig" )
+		if( state_name == "EnterMineAndDig" )
 		{
 			money += delta;
 
@@ -91,7 +92,7 @@ public:
 			}
 		}
 
-		if( map->get_now_state()->get_name() == "QuenchThist" )
+		if( state_name == "QuenchThist" )
 		{
 			if( thirst >= 0 )
 			{
@@ -103,7 +104,7 @@ public:
 			}
 		}
 
-		if( map->get_now_state()->get_name() == "VisitBank" )
+		if( state_name == "VisitBank" )
 		{
 
 			if( money >= 0 )
@@ -120,11 +121,13 @@ public:
 
 		time += delta;
 		map->update( delta );
+		/*
 		std::cout << "Miner time : " << time << std::endl;
 		std::cout << "Miner money : " << money << std::endl;
 		std::cout << "Miner TotalMoney : " << totalMoney << std::endl;
 		std::cout << "Miner thirst : " << thirst << std::endl;
 		std::cout << "Miner State : " << map->get_now_state()->get_name() << std::endl;
 		system( "cls" );
+		*/
 	}
 };

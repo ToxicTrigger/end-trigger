@@ -367,6 +367,7 @@ int main(int, char**)
 			world->add(t);
 			miners.push_back(t);
 		}
+		ImGui::Text( "Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate );
 		ImGui::End();
 
 		for (int w = 0; w < counter; ++w)

@@ -12,14 +12,14 @@ namespace trigger
 	{
 		class state
 		{
-			std::string name;
+			const std::string name;
 		public:
-			explicit inline state( std::string name = "Unknown" ) noexcept
+			explicit inline state( std::string name = "Unknown" ) noexcept : name(name)
 			{
-				this->name = name;
+
 			}
 
-			inline std::string const get_name() const noexcept
+			inline const std::string& get_name() const noexcept
 			{
 				return this->name;
 			}
@@ -46,10 +46,10 @@ namespace trigger
 				ops = 1;
 			}
 
-			explicit inline link( state *current, state *next ) : link()
+			explicit inline link( const state *current, const state *next ) : link()
 			{
-				this->cur._Myptr() = current;
-				this->next._Myptr() = next;
+				this->cur._Myptr() = const_cast<state*>(current);
+				this->next._Myptr() = const_cast<state*>(next);
 			}
 
 			inline const state* const get_current_state() const noexcept
@@ -60,7 +60,7 @@ namespace trigger
 			{
 				return this->next.get();
 			};
-			inline constexpr int const get_ops() const noexcept
+			inline constexpr const int& get_ops() const noexcept
 			{
 				return this->ops;
 			};
@@ -117,7 +117,7 @@ namespace trigger
 				links.push_back( def );
 			}
 
-			inline state* const get_state( std::string name ) const noexcept
+			inline const state* const get_state( const std::string name ) const noexcept
 			{
 				for( auto i : states )
 				{
@@ -129,7 +129,7 @@ namespace trigger
 				return nullptr;
 			}
 
-			inline state* get_state( state *state ) const noexcept
+			inline const state* const get_state( const state *state ) const noexcept
 			{
 				for( auto i : states )
 				{
@@ -138,22 +138,25 @@ namespace trigger
 				return nullptr;
 			}
 
-			inline bool link_state( std::string state1, std::string state2 ) noexcept
+			inline bool link_state( const std::string state1, const std::string state2 ) noexcept
 			{
-				state *a = get_state( state1 );
-				state *b = get_state( state2 );
-				if( a == nullptr || b == nullptr )
+				const state *a = get_state( state1 );
+				if( a != nullptr )
 				{
-					return false;
+					const state *b = get_state( state2 );
+					if( b != nullptr )
+					{
+						link *tmp = new link( a, b );
+						this->links.push_back( tmp );
+						return true;
+					}
 				}
-				link *tmp = new link( a, b );
-				this->links.push_back( tmp );
-				return true;
+				return false;
 			}
 
-			inline const state* const get_now_state() const noexcept
+			inline const state& get_now_state() const noexcept
 			{
-				return now_state.get();
+				return *now_state;
 			}
 
 			inline constexpr void add_state( state *new_state ) noexcept
@@ -164,10 +167,13 @@ namespace trigger
 				}
 			}
 
-			inline const void add_state( std::string state_name ) noexcept
+			inline const void add_state( const std::string state_name ) noexcept
 			{
-				state *tmp = new state( state_name );
-				states.push_back( tmp );
+				if( get_state( state_name ) != nullptr )
+				{
+					state *tmp = new state( state_name );
+					states.push_back( tmp );
+				}
 			}
 
 			inline bool delete_state( state * state ) noexcept
@@ -182,7 +188,7 @@ namespace trigger
 
 			inline bool delete_state( std::string name ) noexcept
 			{
-				if( delete_state( get_state( name ) ) )
+				if( delete_state( const_cast<state*>(get_state( name )) ) )
 				{
 					return true;
 				}
@@ -191,8 +197,8 @@ namespace trigger
 
 			inline const link* const get_link( std::string state1, std::string state2 ) const noexcept
 			{
-				state *tmp = get_state( state1 );
-				state *tmp2 = get_state( state2 );
+				const state *tmp = get_state( state1 );
+				const state *tmp2 = get_state( state2 );
 				if( tmp != nullptr && tmp2 != nullptr )
 				{
 					for( auto i : links )
@@ -219,8 +225,8 @@ namespace trigger
 
 			inline bool change_link( std::string state1, std::string state2, unsigned int op ) const noexcept
 			{
-				state *tmp = get_state( state1 );
-				state *tmp2 = get_state( state2 );
+				const state *tmp = get_state( state1 );
+				const state *tmp2 = get_state( state2 );
 				if( tmp != nullptr && tmp2 != nullptr )
 				{
 					for( auto i : links )
