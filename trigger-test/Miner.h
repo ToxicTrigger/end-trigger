@@ -53,14 +53,10 @@ public:
 
 	}
 
-	std::string get_now_state()
-	{
-		return map->get_now_state().get_name();
-	}
-
+	std::string state_name;
 	void update( float delta ) noexcept
 	{
-		std::string state_name = map->get_now_state().get_name();
+		state_name = map->get_now_state().get_name();
 		if( state_name == "GoHome" )
 		{
 			if( money >= 0 )
