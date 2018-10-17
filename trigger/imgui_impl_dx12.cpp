@@ -16,15 +16,7 @@
 //  2018-06-08: Misc: Extracted imgui_impl_dx12.cpp/.h away from the old combined DX12+Win32 example.
 //  2018-06-08: DirectX12: Use draw_data->DisplayPos and draw_data->DisplaySize to setup projection matrix and clipping rectangle (to ease support for future multi-viewport).
 //  2018-02-22: Merged into master with all Win32 code synchronized to other examples.
-
-#include "imgui.h"
-#include "imgui_impl_dx12.h"
-
-// DirectX
-#include <d3d12.h>
-#include <dxgi1_4.h>
-#include <d3dcompiler.h>
-
+#include"d3dUtil.h"
 // DirectX data
 static ID3D12Device*                g_pd3dDevice = NULL;
 static ID3D10Blob*                  g_pVertexShaderBlob = NULL;
@@ -359,14 +351,16 @@ static void ImGui_ImplDX12_CreateFontsTexture()
         srvDesc.Texture2D.MostDetailedMip = 0;
         srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
         g_pd3dDevice->CreateShaderResourceView(pTexture, &srvDesc, g_hFontSrvCpuDescHandle);
-        if (g_pFontTextureResource != NULL)
-            g_pFontTextureResource->Release();
+		//g_pFontTextureResource = pTexture;
+
+        if (g_pFontTextureResource != NULL)g_pFontTextureResource->Release();
         g_pFontTextureResource = pTexture;
     }
 
     // Store our identifier
     static_assert(sizeof(ImTextureID) >= sizeof(g_hFontSrvGpuDescHandle.ptr), "Can't pack descriptor handle into TexID, 32-bit not supported yet.");
-    io.Fonts->TexID = (ImTextureID)g_hFontSrvGpuDescHandle.ptr;
+	auto t = (ImTextureID)g_hFontSrvGpuDescHandle.ptr;;
+	io.Fonts->TexID = t;
 }
 
 bool    ImGui_ImplDX12_CreateDeviceObjects()

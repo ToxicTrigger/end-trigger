@@ -25,10 +25,13 @@
 #include <fstream>
 #include <sstream>
 #include <cassert>
-#include "d3dx12.h"
+#include <tchar.h>
 #include "DDSTextureLoader.h"
 #include "MathHelper.h"
 
+#include "imgui.h"
+#include "imgui_impl_win32.h"
+#include "imgui_impl_dx12.h"
 
 extern const int gNumFrameResources;
 

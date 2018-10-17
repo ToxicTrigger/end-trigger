@@ -8,13 +8,13 @@
 // Missing features:
 //  [ ] Platform: Gamepad support (best leaving it to user application to fill io.NavInputs[] with gamepad inputs from their source of choice).
 
-#include "imgui.h"
-#include "imgui_impl_win32.h"
+#include "d3dUtil.h"
+
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
-#include <windows.h>
-#include <tchar.h>
+
+
 
 // CHANGELOG
 // (minor and older changes stripped away, please see git history for details)
