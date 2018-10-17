@@ -76,13 +76,15 @@ namespace trigger
 			std::unique_ptr<state> now_state;
 			std::list<state*> states;
 			std::list<link*> links;
+			std::string cur_name, now_name;
 
 			inline void simulate( float delta ) noexcept
 			{
 				now_state->update( delta );
 				for( auto i : this->links )
 				{
-					if( i->get_current_state()->get_name() == now_state->get_name() )
+					cur_name = i->get_current_state()->get_name();
+					if( cur_name == now_name )
 					{
 						// ops == 0 , move now_state between link
 						if( i->get_ops() == 0 )
@@ -91,6 +93,7 @@ namespace trigger
 							now_state->end_state();
 							now_state._Myptr() = const_cast<state*>(i->get_next_state());
 							now_state->begin_state();
+							now_name = now_state->get_name();
 							return;
 						}
 					}
@@ -106,6 +109,7 @@ namespace trigger
 				auto idle = new state( "idle" );
 				add_state( idle );
 				now_state = std::make_unique<state>( idle->get_name() );
+				now_name = now_state->get_name();
 			}
 
 			inline map( state *def_state ) : map()
@@ -115,6 +119,7 @@ namespace trigger
 				link *def = new link( now_state.get(), def_state );
 				def->set_ops( 0 );
 				links.push_back( def );
+				now_name = now_state->get_name();
 			}
 
 			inline const state* const get_state( const std::string name ) const noexcept
