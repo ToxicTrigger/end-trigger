@@ -14,9 +14,9 @@ namespace trigger
 		{
 			const std::string name;
 		public:
-			explicit inline state( std::string name = "Unknown" ) noexcept : name(name)
+			explicit inline state( const std::string name = "Unknown" ) noexcept : name(name)
 			{
-
+				
 			}
 
 			inline const std::string& get_name() const noexcept
@@ -27,7 +27,7 @@ namespace trigger
 			{};
 			virtual void end_state()
 			{};
-			virtual void update( float delta )
+			virtual void update( const float delta )
 			{};
 		};
 
@@ -52,11 +52,11 @@ namespace trigger
 				this->next._Myptr() = const_cast<state*>(next);
 			}
 
-			inline const state* const get_current_state() const noexcept
+			inline const state* get_current_state() const noexcept
 			{
 				return this->cur.get();
 			};
-			inline const state* const get_next_state() const noexcept
+			inline const state* get_next_state() const noexcept
 			{
 				return this->next.get();
 			};
@@ -101,7 +101,7 @@ namespace trigger
 			}
 
 		public:
-			inline map()
+			inline explicit map()
 			{
 				states = std::list<state*>();
 				links = std::list<link*>();
@@ -112,7 +112,7 @@ namespace trigger
 				now_name = now_state->get_name();
 			}
 
-			inline map( state *def_state ) : map()
+			inline explicit map( state *def_state ) : map()
 			{
 				// inited state idle
 				add_state( def_state );

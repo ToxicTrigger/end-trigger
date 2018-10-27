@@ -122,6 +122,7 @@ private:
 	XMFLOAT3 mEyePos = {0.0f, 0.0f, 0.0f};
 	XMFLOAT4X4 mView = MathHelper::Identity4x4();
 	XMFLOAT4X4 mProj = MathHelper::Identity4x4();
+	XMFLOAT3 direction;
 
 	float mTheta = 1.3f*XM_PI;
 	float mPhi = 0.4f*XM_PI;
@@ -293,6 +294,28 @@ void CrateApp::Draw( const GameTimer& gt )
 
 void CrateApp::OnMouseDown( WPARAM btnState, int x, int y )
 {
+	if( btnState & MK_LBUTTON )
+	{
+		//ray
+		XMVECTOR mouseNear = XMVectorSet( (float)mLastMousePos.x, (float)mLastMousePos.y, 0.0f, 0.0f );
+		XMVECTOR mouseFar = XMVectorSet( (float)mLastMousePos.x, (float)mLastMousePos.y, 1.0f, 0.0f );
+		XMMATRIX pro = XMLoadFloat4x4( &mMainPassCB.Proj );
+		XMMATRIX view = XMLoadFloat4x4( &mMainPassCB.View );
+
+
+		XMVECTOR unprojected_near = XMVector3Unproject( mouseNear, 0, 0, mScreenViewport.Width, mScreenViewport.Height,
+														mMainPassCB.NearZ, mMainPassCB.FarZ,
+														pro, view, XMMatrixIdentity() );
+
+		XMVECTOR unprojected_far = XMVector3Unproject( mouseFar, 0, 0, mScreenViewport.Width, mScreenViewport.Height,
+													   mMainPassCB.NearZ, mMainPassCB.FarZ,
+													   pro, view, XMMatrixIdentity() );
+		XMVECTOR result = DirectX::XMVector3Normalize( DirectX::XMVectorSubtract( unprojected_far, unprojected_near ) );
+
+		XMStoreFloat3( &direction, result );
+	}
+
+
 	mLastMousePos.x = x;
 	mLastMousePos.y = y;
 
@@ -318,6 +341,7 @@ void CrateApp::OnMouseMove( WPARAM btnState, int x, int y )
 
 		// Restrict the angle mPhi.
 		mPhi = MathHelper::Clamp( mPhi, 0.1f, MathHelper::Pi - 0.1f );
+
 	}
 	else if( (btnState & MK_RBUTTON) != 0 )
 	{
@@ -353,6 +377,7 @@ void CrateApp::UpdateCamera( const GameTimer& gt )
 
 	XMMATRIX view = XMMatrixLookAtLH( pos, target, up );
 	XMStoreFloat4x4( &mView, view );
+
 }
 
 void CrateApp::AnimateMaterials( const GameTimer& gt )
@@ -443,6 +468,7 @@ void CrateApp::UpdateMainPassCB( const GameTimer& gt )
 
 	auto currPassCB = mCurrFrameResource->PassCB.get();
 	currPassCB->CopyData( 0, mMainPassCB );
+
 }
 
 void CrateApp::LoadTextures()
@@ -519,18 +545,23 @@ void CrateApp::BuildDescriptorHeaps()
 	// Create the SRV heap.
 	//
 	D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
-	srvHeapDesc.NumDescriptors = 3;
+	srvHeapDesc.NumDescriptors = 4;
 	srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 	ThrowIfFailed( md3dDevice->CreateDescriptorHeap( &srvHeapDesc, IID_PPV_ARGS( &mSrvDescriptorHeap ) ) );
 
-	//
-	// Fill out the heap with actual descriptors.
-	//
 	CD3DX12_CPU_DESCRIPTOR_HANDLE hDescriptor( mSrvDescriptorHeap->GetCPUDescriptorHandleForHeapStart() );
 
-	//auto wct = mTextures["woodCrateTex1"]->Resource;
-
+	{
+		IMGUI_CHECKVERSION();
+		ImGui::CreateContext();
+		ImGuiIO& io = ImGui::GetIO(); (void)io;
+		ImGui_ImplWin32_Init( mhMainWnd );
+		ImGui_ImplDX12_Init( md3dDevice.Get(), 3, DXGI_FORMAT_R8G8B8A8_UNORM,
+							 mSrvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
+							 mSrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart() );
+	}
+	hDescriptor.Offset( 1, mCbvSrvDescriptorSize );
 	{
 		auto woodCrateTex = mTextures["woodCrateTex"]->Resource;
 		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
@@ -566,18 +597,8 @@ void CrateApp::BuildDescriptorHeaps()
 		srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
 		md3dDevice->CreateShaderResourceView( woodCrateTex.Get(), &srvDesc, hDescriptor );
 	}
-	hDescriptor.Offset( 1, mCbvSrvDescriptorSize );
-	{
-		IMGUI_CHECKVERSION();
-		ImGui::CreateContext();
-		ImGuiIO& io = ImGui::GetIO(); (void)io;
-		ImGui_ImplWin32_Init( mhMainWnd );
-		ImGui_ImplDX12_Init( md3dDevice.Get(), 3, DXGI_FORMAT_R8G8B8A8_UNORM,
-							 mSrvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
-							 mSrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart() );
-	}
-
 }
+
 
 void CrateApp::BuildShadersAndInputLayout()
 {
@@ -602,12 +623,12 @@ void CrateApp::BuildShapeGeometry()
 	boxSubmesh.StartIndexLocation = 0;
 	boxSubmesh.BaseVertexLocation = 0;
 
-
 	std::vector<Vertex> vertices( box.Vertices.size() );
 
 	for( size_t i = 0; i < box.Vertices.size(); ++i )
 	{
-		vertices[i].Pos = box.Vertices[i].Position;
+		auto a = box.Vertices[i].Position;
+		vertices[i].Pos = a;
 		vertices[i].Normal = box.Vertices[i].Normal;
 		vertices[i].TexC = box.Vertices[i].TexC;
 	}
@@ -690,7 +711,7 @@ void CrateApp::BuildMaterials()
 		auto woodCrate = std::make_unique<Material>();
 		woodCrate->Name = "woodCrate";
 		woodCrate->MatCBIndex = 0;
-		woodCrate->DiffuseSrvHeapIndex = 0;
+		woodCrate->DiffuseSrvHeapIndex = 1; // <- 이게 문제였음 ImGui 에서 할당을 한번 하니까 +1 해줘야 했음.
 		woodCrate->DiffuseAlbedo = XMFLOAT4( 1.0f, 1.0f, 1.0f, 1.0f );
 		woodCrate->FresnelR0 = XMFLOAT3( 0.05f, 0.05f, 0.05f );
 		woodCrate->Roughness = 0.2f;
@@ -702,7 +723,7 @@ void CrateApp::BuildMaterials()
 		auto woodCrate = std::make_unique<Material>();
 		woodCrate->Name = "woodCrate2";
 		woodCrate->MatCBIndex = 0;
-		woodCrate->DiffuseSrvHeapIndex = 1;
+		woodCrate->DiffuseSrvHeapIndex = 2;
 		woodCrate->DiffuseAlbedo = XMFLOAT4( 1.0f, 1.0f, 1.0f, 1.0f );
 		woodCrate->FresnelR0 = XMFLOAT3( 0.05f, 0.05f, 0.05f );
 		woodCrate->Roughness = 0.2f;
@@ -714,7 +735,7 @@ void CrateApp::BuildMaterials()
 		auto woodCrate = std::make_unique<Material>();
 		woodCrate->Name = "woodCrate3";
 		woodCrate->MatCBIndex = 0;
-		woodCrate->DiffuseSrvHeapIndex = 2;
+		woodCrate->DiffuseSrvHeapIndex = 3;
 		woodCrate->DiffuseAlbedo = XMFLOAT4( 1.0f, 1.0f, 1.0f, 1.0f );
 		woodCrate->FresnelR0 = XMFLOAT3( 0.05f, 0.05f, 0.05f );
 		woodCrate->Roughness = 0.2f;
@@ -762,7 +783,6 @@ void CrateApp::BuildRenderItems()
 		mAllRitems.push_back( std::move( boxRitem ) );
 	}
 
-
 	// All the render items are opaque.
 	for( auto& e : mAllRitems )
 		mOpaqueRitems.push_back( e.get() );
@@ -770,6 +790,11 @@ void CrateApp::BuildRenderItems()
 
 void CrateApp::DrawRenderItems( ID3D12GraphicsCommandList* cmdList, const std::vector<RenderItem*>& ritems )
 {
+	//Draw Gui
+	ImGui_ImplDX12_NewFrame();
+	ImGui_ImplWin32_NewFrame();
+	ImGui::NewFrame();
+
 	UINT objCBByteSize = d3dUtil::CalcConstantBufferByteSize( sizeof( ObjectConstants ) );
 	UINT matCBByteSize = d3dUtil::CalcConstantBufferByteSize( sizeof( MaterialConstants ) );
 
@@ -796,13 +821,9 @@ void CrateApp::DrawRenderItems( ID3D12GraphicsCommandList* cmdList, const std::v
 
 		cmdList->DrawIndexedInstanced( ri->IndexCount, 1, ri->StartIndexLocation, ri->BaseVertexLocation, 0 );
 	}
-	//Draw Gui
-	ImGui_ImplDX12_NewFrame();
-	ImGui_ImplWin32_NewFrame();
-	ImGui::NewFrame();
+
 	ImGui::Begin( "Hello" );
-	ImGui::End();
-	ImGui::Begin( "Helo" );
+	ImGui::Text( "%f, %f, %f", direction.x, direction.y, direction.z );
 	ImGui::End();
 	ImGui::Render();
 	ImGui_ImplDX12_RenderDrawData( ImGui::GetDrawData(), cmdList );

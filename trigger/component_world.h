@@ -24,10 +24,11 @@ namespace trigger
 		thread main_thread;
 		bool use_thread;
 		mutex lock;
+		float time_scale = 1.0f;
 
 	public:
 		//Build a new World
-		inline component_world( bool UseThread )
+		explicit inline component_world( bool UseThread )
 		{
 			components = list<component*>();
 			start_time = time::now();
@@ -39,13 +40,13 @@ namespace trigger
 			}
 		}
 
-		inline float get_delta_time() noexcept
+		inline float get_delta_time() const noexcept
 		{
 			return delta_time.count();
 		}
 
 		template<typename T>
-		inline constexpr T* get()
+		inline constexpr T* get() const
 		{
 			for( auto i : components )
 			{
@@ -132,7 +133,7 @@ namespace trigger
 			}
 		}
 
-		inline void update_all()
+		void update_all()
 		{
 			if( components.size() != 0 )
 			{
@@ -145,7 +146,7 @@ namespace trigger
 					{
 						if( i->active )
 						{
-							i->update( this->delta_time.count() );
+							i->update( this->delta_time.count() * time_scale * i->time_scale );
 						}
 					}
 				}

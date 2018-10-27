@@ -123,6 +123,7 @@
     <None Include=".gitignore" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="actor.h" />
     <ClInclude Include="component.h" />
     <ClInclude Include="component_world.h" />
     <ClInclude Include="d3dApp.h" />

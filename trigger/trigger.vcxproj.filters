@@ -25,6 +25,9 @@
     <Filter Include="헤더 파일\dx12">
       <UniqueIdentifier>{466056bf-b1e9-49f5-b554-8c9f6c768754}</UniqueIdentifier>
     </Filter>
+    <Filter Include="헤더 파일\game">
+      <UniqueIdentifier>{764d738c-68e4-45ea-841d-1ef341b6eac6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
@@ -92,6 +95,9 @@
     </ClInclude>
     <ClInclude Include="imgui_impl_dx12.h">
       <Filter>헤더 파일\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="actor.h">
+      <Filter>헤더 파일\game</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
