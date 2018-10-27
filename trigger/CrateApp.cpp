@@ -70,7 +70,7 @@ private:
 	virtual void OnMouseUp( WPARAM btnState, int x, int y )override;
 	virtual void OnMouseMove( WPARAM btnState, int x, int y )override;
 
-	void OnKeyboardInput( const GameTimer& gt );
+	virtual void OnKeyboardInput( WPARAM btnState )override;
 	void UpdateCamera( const GameTimer& gt );
 	void AnimateMaterials( const GameTimer& gt );
 	void UpdateObjectCBs( const GameTimer& gt );
@@ -128,6 +128,11 @@ private:
 	float mPhi = 0.4f*XM_PI;
 	float mRadius = 2.5f;
 
+	//TEST
+	float * pos;
+	float * rot;
+	float * scale;
+
 	POINT mLastMousePos;
 };
 
@@ -176,6 +181,24 @@ bool CrateApp::Initialize()
 	// so we have to query this information.
 	mCbvSrvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize( D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV );
 
+	//TEST
+	pos = new float[3];
+	pos[0] = 0;
+	pos[1] = 0;
+	pos[2] = 0;
+
+	rot = new float[3];
+	rot[0] = 0;
+	rot[1] = 0;
+	rot[2] = 0;
+
+
+	scale = new float[3];
+	scale[0] = 0;
+	scale[1] = 0;
+	scale[2] = 0;
+
+
 	LoadTextures();
 	BuildRootSignature();
 	BuildDescriptorHeaps();
@@ -208,7 +231,6 @@ void CrateApp::OnResize()
 
 void CrateApp::Update( const GameTimer& gt )
 {
-	OnKeyboardInput( gt );
 	UpdateCamera( gt );
 
 	// Cycle through the circular frame resource array.
@@ -302,7 +324,6 @@ void CrateApp::OnMouseDown( WPARAM btnState, int x, int y )
 		XMMATRIX pro = XMLoadFloat4x4( &mMainPassCB.Proj );
 		XMMATRIX view = XMLoadFloat4x4( &mMainPassCB.View );
 
-
 		XMVECTOR unprojected_near = XMVector3Unproject( mouseNear, 0, 0, mScreenViewport.Width, mScreenViewport.Height,
 														mMainPassCB.NearZ, mMainPassCB.FarZ,
 														pro, view, XMMatrixIdentity() );
@@ -329,7 +350,7 @@ void CrateApp::OnMouseUp( WPARAM btnState, int x, int y )
 
 void CrateApp::OnMouseMove( WPARAM btnState, int x, int y )
 {
-	if( (btnState & MK_LBUTTON) != 0 )
+	if( (btnState & MK_RBUTTON) != 0 )
 	{
 		// Make each pixel correspond to a quarter of a degree.
 		float dx = XMConvertToRadians( 0.25f*static_cast<float>(x - mLastMousePos.x) );
@@ -343,6 +364,7 @@ void CrateApp::OnMouseMove( WPARAM btnState, int x, int y )
 		mPhi = MathHelper::Clamp( mPhi, 0.1f, MathHelper::Pi - 0.1f );
 
 	}
+	/*
 	else if( (btnState & MK_RBUTTON) != 0 )
 	{
 		// Make each pixel correspond to 0.2 unit in the scene.
@@ -354,20 +376,25 @@ void CrateApp::OnMouseMove( WPARAM btnState, int x, int y )
 
 		// Restrict the radius.
 		mRadius = MathHelper::Clamp( mRadius, 5.0f, 150.0f );
-	}
+	}*/
 
 	mLastMousePos.x = x;
 	mLastMousePos.y = y;
 }
 
-void CrateApp::OnKeyboardInput( const GameTimer& gt )
-{}
+void CrateApp::OnKeyboardInput( WPARAM btnState )
+{
+	if( btnState == 87 )
+	{
+		mEyePos.z += 0.1f;
+	}
+}
 
 void CrateApp::UpdateCamera( const GameTimer& gt )
 {
 	// Convert Spherical to Cartesian coordinates.
 	mEyePos.x = mRadius * sinf( mPhi )*cosf( mTheta );
-	mEyePos.z = mRadius * sinf( mPhi )*sinf( mTheta );
+	//mEyePos.z = mRadius * sinf( mPhi )*sinf( mTheta );
 	mEyePos.y = mRadius * cosf( mPhi );
 
 	// Build the view matrix.
@@ -398,13 +425,19 @@ void CrateApp::UpdateObjectCBs( const GameTimer& gt )
 			XMMATRIX texTransform = XMLoadFloat4x4( &e->TexTransform );
 
 			ObjectConstants objConstants;
-			XMStoreFloat4x4( &objConstants.World, XMMatrixTranspose( world ) );
+			XMMATRIX x = XMMatrixRotationX( rot[0] );
+			XMMATRIX y = XMMatrixRotationY( rot[1] );
+			XMMATRIX z = XMMatrixRotationZ( rot[2] );
+
+			XMMATRIX s = XMMatrixScaling( scale[0], scale[1], scale[2] );
+
+			XMStoreFloat4x4( &objConstants.World, XMMatrixTranspose( world * s * (x * y * z) * (XMMatrixTranslation( pos[0], pos[1], pos[2] ))) );
 			XMStoreFloat4x4( &objConstants.TexTransform, XMMatrixTranspose( texTransform ) );
 
 			currObjectCB->CopyData( e->ObjCBIndex, objConstants );
 
 			// Next FrameResource need to be updated too.
-			e->NumFramesDirty--;
+			//e->NumFramesDirty--;
 		}
 	}
 }
@@ -613,6 +646,7 @@ void CrateApp::BuildShadersAndInputLayout()
 	};
 }
 
+
 void CrateApp::BuildShapeGeometry()
 {
 	GeometryGenerator geoGen;
@@ -627,8 +661,7 @@ void CrateApp::BuildShapeGeometry()
 
 	for( size_t i = 0; i < box.Vertices.size(); ++i )
 	{
-		auto a = box.Vertices[i].Position;
-		vertices[i].Pos = a;
+		vertices[i].Pos = box.Vertices[i].Position;
 		vertices[i].Normal = box.Vertices[i].Normal;
 		vertices[i].TexC = box.Vertices[i].TexC;
 	}
@@ -822,9 +855,20 @@ void CrateApp::DrawRenderItems( ID3D12GraphicsCommandList* cmdList, const std::v
 		cmdList->DrawIndexedInstanced( ri->IndexCount, 1, ri->StartIndexLocation, ri->BaseVertexLocation, 0 );
 	}
 
-	ImGui::Begin( "Hello" );
-	ImGui::Text( "%f, %f, %f", direction.x, direction.y, direction.z );
+	ImGui::Begin( "Control Object" );
+	ImGui::Text( "Name : %s", "Syha" );
+	ImGui::SliderFloat3( "position ", pos, -10, 10);
+
+	ImGui::SliderAngle( "X :", &rot[0] );
+	ImGui::SliderAngle( "Y :", &rot[1] );
+	ImGui::SliderAngle( "Z :", &rot[2] );
+
+	ImGui::InputFloat("W :", &scale[0]);
+	ImGui::InputFloat( "H :", &scale[1] );
+	ImGui::InputFloat( "D :", &scale[2] );
+
 	ImGui::End();
+
 	ImGui::Render();
 	ImGui_ImplDX12_RenderDrawData( ImGui::GetDrawData(), cmdList );
 }

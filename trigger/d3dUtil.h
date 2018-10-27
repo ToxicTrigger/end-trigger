@@ -26,6 +26,9 @@
 #include <sstream>
 #include <cassert>
 #include <tchar.h>
+
+#include <limits>
+
 #include "DDSTextureLoader.h"
 #include "MathHelper.h"
 
