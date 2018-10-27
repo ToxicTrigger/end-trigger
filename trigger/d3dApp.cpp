@@ -369,6 +369,8 @@ LRESULT D3DApp::MsgProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 		return 0;
 		case WM_KEYDOWN:
 		OnKeyboardInput( wParam );
+		return 0;
+
 		case WM_KEYUP:
 		if( wParam == VK_ESCAPE )
 		{
@@ -376,7 +378,7 @@ LRESULT D3DApp::MsgProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 		}
 		else if( (int)wParam == VK_F2 )
 			Set4xMsaaState( !m4xMsaaState );
-
+		OnKeyboardInputUp( wParam );
 		return 0;
 	}
 

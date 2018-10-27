@@ -59,6 +59,8 @@ protected:
 	virtual void OnMouseUp(WPARAM btnState, int x, int y)  { }
 	virtual void OnMouseMove(WPARAM btnState, int x, int y){ }
 	virtual void OnKeyboardInput( WPARAM btnState ){ }
+	virtual void OnKeyboardInputUp( WPARAM btnState )
+	{}
 
 protected:
 

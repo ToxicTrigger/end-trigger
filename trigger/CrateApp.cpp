@@ -71,6 +71,7 @@ private:
 	virtual void OnMouseMove( WPARAM btnState, int x, int y )override;
 
 	virtual void OnKeyboardInput( WPARAM btnState )override;
+	virtual void OnKeyboardInputUp( WPARAM btnState )override;
 	void UpdateCamera( const GameTimer& gt );
 	void AnimateMaterials( const GameTimer& gt );
 	void UpdateObjectCBs( const GameTimer& gt );
@@ -132,6 +133,8 @@ private:
 	float * pos;
 	float * rot;
 	float * scale;
+
+	float h = 0, v = 0;
 
 	POINT mLastMousePos;
 };
@@ -198,6 +201,7 @@ bool CrateApp::Initialize()
 	scale[1] = 0;
 	scale[2] = 0;
 
+	mEyePos = XMFLOAT3( 1, 1, 1 );
 
 	LoadTextures();
 	BuildRootSignature();
@@ -362,7 +366,7 @@ void CrateApp::OnMouseMove( WPARAM btnState, int x, int y )
 
 		// Restrict the angle mPhi.
 		mPhi = MathHelper::Clamp( mPhi, 0.1f, MathHelper::Pi - 0.1f );
-
+		//OnKeyboardInput( btnState );
 	}
 	/*
 	else if( (btnState & MK_RBUTTON) != 0 )
@@ -382,20 +386,55 @@ void CrateApp::OnMouseMove( WPARAM btnState, int x, int y )
 	mLastMousePos.y = y;
 }
 
+void CrateApp::OnKeyboardInputUp( WPARAM btnState )
+{
+	if( btnState == 87 || btnState == 0x53 )
+	{
+		v = 0;
+	}
+	if( btnState == 0x41 || btnState == 0x44 )
+	{
+		h = 0;
+	}
+}
+
 void CrateApp::OnKeyboardInput( WPARAM btnState )
 {
-	if( btnState == 87 )
+	if( btnState == 87 || btnState == 0x53 )
 	{
-		mEyePos.z += 0.1f;
+		if( btnState == 87 )
+		{
+			v = 1;
+		}
+		else if( btnState == 0x53 )
+		{
+			v = -1;
+		}
+	}
+	
+
+	if( btnState == 0x41 || btnState == 0x44 )
+	{
+		if( btnState == 0x41 )
+		{
+			h = 1;
+		}
+		if( btnState == 0x44 )
+		{
+			h = -1;
+		}
 	}
 }
 
 void CrateApp::UpdateCamera( const GameTimer& gt )
 {
 	// Convert Spherical to Cartesian coordinates.
-	mEyePos.x = mRadius * sinf( mPhi )*cosf( mTheta );
+	//mEyePos.x = mRadius * sinf( mPhi )*cosf( mTheta );
 	//mEyePos.z = mRadius * sinf( mPhi )*sinf( mTheta );
 	mEyePos.y = mRadius * cosf( mPhi );
+
+	mEyePos.x = mEyePos.x + h * 0.001f;
+	mEyePos.z = mEyePos.z + v * 0.001f;
 
 	// Build the view matrix.
 	XMVECTOR pos = XMVectorSet( mEyePos.x, mEyePos.y, mEyePos.z, 1.0f );
