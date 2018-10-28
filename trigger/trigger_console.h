@@ -111,9 +111,15 @@ namespace trigger
 						*p_open = false;
 					ImGui::EndPopup();
 				}
-				if( ImGui::SmallButton( "Add Dummy Text" ) )
+				if( ImGui::SmallButton( "Show World" ) )
 				{
-					AddLog( "%d some text", Items.Size ); AddLog( "some more text" ); AddLog( "display very important message here!" );
+					auto tmp = world->get_components<actor>();
+					AddLog( "[log] Name\t\tEnable" );
+					AddLog( "[log] -------------------------" );
+					for( auto t : tmp )
+					{
+						AddLog( "[log] %s\t\t%d", t->name.c_str(), t->active );
+					}
 				} ImGui::SameLine();
 				if( ImGui::SmallButton( "Add Dummy Error" ) )
 				{
@@ -240,9 +246,11 @@ namespace trigger
 				else if( Stricmp( command_line, "show world" ) == 0 )
 				{
 					auto tmp = world->get_components<actor>();
+					AddLog( "[log] Name\t\tEnable" );
+					AddLog( "[log] -------------------------" );
 					for( auto t : tmp )
 					{
-						AddLog( "[log] %s",  t->name.c_str());
+						AddLog( "[log] %s\t\t%d",  t->name.c_str(), t->active);
 					}
 				}
 				else

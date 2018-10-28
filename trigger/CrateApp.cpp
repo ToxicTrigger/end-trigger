@@ -940,6 +940,15 @@ void CrateApp::DrawRenderItems( ID3D12GraphicsCommandList* cmdList, const std::v
 			}
 			ImGui::EndMenu();
 		}
+		if( ImGui::BeginMenu( "Game" ) )
+		{
+			if( ImGui::MenuItem( "Creat new Actor" ) )
+			{
+				world->add( new trigger::actor() );
+				console.AddLog( "[log] new Actor spawn in World.");
+			}
+			ImGui::EndMenu();
+		}
 		ImGui::EndMainMenuBar();
 	}
 
@@ -948,35 +957,56 @@ void CrateApp::DrawRenderItems( ID3D12GraphicsCommandList* cmdList, const std::v
 		console.Draw( "Trigger Console", &console_open );
 	}
 	
-
-	ImGui::Begin( "Controller" );
-	if( ImGui::BeginMenu( "Actions" , "some Action for this Object") )
+	int count_ = 0;
+	for( auto i : world->get_components<trigger::actor>() )
 	{
-		if( ImGui::MenuItem( "delete" ) )
+		std::string t("Controller : " + to_string(count_));
+		if( ImGui::Begin(t.c_str() ) )
 		{
-			console.AddLog( "[log] %s is Deleted in World!", cube->name.c_str() );
-			world->delete_component( cube );
+			if( ImGui::BeginMenu( "Actions", "some Action for this Object" ) )
+			{
+				if( ImGui::MenuItem( "delete" ) )
+				{
+					if( world->delete_component( i ) )
+					{
+						console.AddLog( "[log] %s is Deleted in World!", i->name.c_str() );
+					}
+					else
+					{
+						console.AddLog( "[error] %s , cant Find in World!", i->name.c_str() );
+					}
+				}
+				ImGui::EndMenu();
+			}
+			ImGui::Separator();
+			
+			if( ImGui::Checkbox("", &i->active ) )
+			{
+				
+			}
+			ImGui::SameLine();
+			ImGui::InputText( "Name", &i->name );
+
+			static float *input_pos = new float[3];
+			ImGui::InputFloat3( "position ", input_pos, -10, 10 );
+			i->position.x = input_pos[0];
+			i->position.y = input_pos[1];
+			i->position.z = input_pos[2];
+			ImGui::Separator();
+
+			ImGui::InputFloat( "X", &i->rotation.x );
+			ImGui::InputFloat( "Y", &i->rotation.y );
+			ImGui::InputFloat( "Z", &i->rotation.z );
+			ImGui::Separator();
+			ImGui::InputFloat( "W", &i->scale.x );
+			ImGui::InputFloat( "H", &i->scale.y );
+			ImGui::InputFloat( "D", &i->scale.z );
+			ImGui::Separator();
+
+			++count_;
 		}
-		ImGui::EndMenu();
+		ImGui::End();
 	}
-	ImGui::Separator();
-	ImGui::InputText( "Name", &cube->name );
-
-	static float *input_pos = new float[3];
-	ImGui::InputFloat3( "position ", input_pos, -10, 10);
-	cube->position.x = input_pos[0];
-	cube->position.y = input_pos[1];
-	cube->position.z = input_pos[2];
-
-	ImGui::InputFloat( "X", &cube->rotation.x );
-	ImGui::InputFloat( "Y", &cube->rotation.y );
-	ImGui::InputFloat( "Z", &cube->rotation.z );
-
-	ImGui::InputFloat( "W", &cube->scale.x );
-	ImGui::InputFloat( "H", &cube->scale.y );
-	ImGui::InputFloat( "D", &cube->scale.z );
-
-	ImGui::End();
 
 	ImGui::Render();
 	ImGui_ImplDX12_RenderDrawData( ImGui::GetDrawData(), cmdList );
