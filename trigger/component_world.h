@@ -59,6 +59,11 @@ namespace trigger
 			return nullptr;
 		};
 
+		inline list<component*> get_all() const
+		{
+			return this->components;
+		}
+
 		template<typename T>
 		inline constexpr list<T*> get_components()
 		{

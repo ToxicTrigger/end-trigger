@@ -140,11 +140,13 @@
     <ClInclude Include="imgui_impl_dx12.h" />
     <ClInclude Include="imgui_impl_win32.h" />
     <ClInclude Include="imgui_internal.h" />
+    <ClInclude Include="imgui_stl.h" />
     <ClInclude Include="imstb_rectpack.h" />
     <ClInclude Include="imstb_textedit.h" />
     <ClInclude Include="imstb_truetype.h" />
     <ClInclude Include="MathHelper.h" />
     <ClInclude Include="texture.h" />
+    <ClInclude Include="trigger_console.h" />
     <ClInclude Include="UploadBuffer.h" />
   </ItemGroup>
   <ItemGroup>
@@ -160,6 +162,7 @@
     <ClCompile Include="imgui_draw.cpp" />
     <ClCompile Include="imgui_impl_dx12.cpp" />
     <ClCompile Include="imgui_impl_win32.cpp" />
+    <ClCompile Include="imgui_stl.cpp" />
     <ClCompile Include="imgui_widgets.cpp" />
     <ClCompile Include="MathHelper.cpp" />
   </ItemGroup>

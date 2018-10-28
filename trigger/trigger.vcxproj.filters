@@ -100,6 +100,12 @@
     <ClInclude Include="actor.h">
       <Filter>헤더 파일\game</Filter>
     </ClInclude>
+    <ClInclude Include="imgui_stl.h">
+      <Filter>헤더 파일\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="trigger_console.h">
+      <Filter>헤더 파일\game</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="imgui.cpp">
@@ -142,6 +148,9 @@
       <Filter>헤더 파일\imgui</Filter>
     </ClCompile>
     <ClCompile Include="imgui_impl_dx12.cpp">
+      <Filter>헤더 파일\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui_stl.cpp">
       <Filter>헤더 파일\imgui</Filter>
     </ClCompile>
   </ItemGroup>

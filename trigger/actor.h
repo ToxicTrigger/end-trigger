@@ -3,27 +3,38 @@
 #include <DirectXMath.h>
 
 #include "component.h"
+#include "fsm.h"
 
 using namespace DirectX;
 
-class actor : public trigger::component
+namespace trigger
 {
-
-public:
-	XMVECTOR position, rotation, scale;
-
-	void update( float delta ) noexcept
+	class actor : public trigger::component
 	{
 
-	}
+	public:
+		std::string name;
+		XMFLOAT3 position, rotation, scale;
+		trigger::fsm::map fsm;
 
-	actor()
-	{
+		void update( float delta ) noexcept
+		{
+			fsm.update( delta );
+		}
 
-	}
-	~actor()
-	{
+		actor()
+		{
+			name = "Actor";
+			position = XMFLOAT3( 0, 0, 0 );
+			rotation = XMFLOAT3( 0, 0, 0 );
+			scale = XMFLOAT3( 1, 1, 1 );
+		}
 
-	}
-};
+		~actor()
+		{
+
+		}
+	};
+}
+
 

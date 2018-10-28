@@ -5,6 +5,8 @@
 #include <vadefs.h>
 #include <stdio.h>
 #include <string>
+#include "component_world.h"
+#include "actor.h"
 
 #ifdef _MSC_VER
 #pragma warning (disable: 4996)
@@ -22,8 +24,9 @@ namespace trigger
 			ImVector<char*>       History;
 			int                   HistoryPos;    // -1: new line, 0..History.Size-1 browsing history.
 			ImVector<const char*> Commands;
+			trigger::component_world *world;
 
-			console()
+			console( trigger::component_world *world )
 			{
 				ClearLog();
 				memset( InputBuf, 0, sizeof( InputBuf ) );
@@ -31,9 +34,11 @@ namespace trigger
 				Commands.push_back( "HELP" );
 				Commands.push_back( "HISTORY" );
 				Commands.push_back( "CLEAR" );
+				Commands.push_back( "show world" );
 				Commands.push_back( "CLASSIFY" );  // "classify" is only here to provide an example of "C"+[tab] completing to "CL" and displaying matches.
 				AddLog( "Trigger Engine Run!" );
 				AddLog( "Welcome!" );
+				this->world = world;
 			}
 
 			~console()
@@ -231,6 +236,14 @@ namespace trigger
 				else if( a.find("log", 0) != std::string::npos )
 				{
 					AddLog( "[log] %s", command_line);
+				}
+				else if( Stricmp( command_line, "show world" ) == 0 )
+				{
+					auto tmp = world->get_components<actor>();
+					for( auto t : tmp )
+					{
+						AddLog( "[log] %s",  t->name.c_str());
+					}
 				}
 				else
 				{

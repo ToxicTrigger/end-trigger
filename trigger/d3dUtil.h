@@ -35,6 +35,10 @@
 #include "imgui.h"
 #include "imgui_impl_win32.h"
 #include "imgui_impl_dx12.h"
+#include "imgui_stl.h"
+#include "component_world.h"
+#include "actor.h"
+#include "trigger_console.h"
 
 extern const int gNumFrameResources;
 

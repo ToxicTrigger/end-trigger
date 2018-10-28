@@ -90,6 +90,7 @@ int D3DApp::Run()
 
 			if( !mAppPaused )
 			{
+				world->update_all();
 				CalculateFrameStats();
 				Update( mTimer );
 				Draw( mTimer );
@@ -118,6 +119,8 @@ bool D3DApp::Initialize()
 
 	// Do the initial resize code.
 	OnResize();
+
+	world = new trigger::component_world( true );
 
 	return true;
 }

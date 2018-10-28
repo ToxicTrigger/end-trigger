@@ -133,6 +133,7 @@ private:
 	float * pos;
 	float * rot;
 	float * scale;
+	trigger::actor *cube;
 
 	float h = 0, v = 0;
 
@@ -200,6 +201,9 @@ bool CrateApp::Initialize()
 	scale[0] = 0;
 	scale[1] = 0;
 	scale[2] = 0;
+
+	cube = new trigger::actor();
+	world->add( cube );
 
 	mEyePos = XMFLOAT3( 1, 1, 1 );
 
@@ -388,6 +392,7 @@ void CrateApp::OnMouseMove( WPARAM btnState, int x, int y )
 
 void CrateApp::OnKeyboardInputUp( WPARAM btnState )
 {
+	
 	if( btnState == 87 || btnState == 0x53 )
 	{
 		v = 0;
@@ -431,14 +436,15 @@ void CrateApp::UpdateCamera( const GameTimer& gt )
 	// Convert Spherical to Cartesian coordinates.
 	//mEyePos.x = mRadius * sinf( mPhi )*cosf( mTheta );
 	//mEyePos.z = mRadius * sinf( mPhi )*sinf( mTheta );
-	mEyePos.y = mRadius * cosf( mPhi );
-
 	mEyePos.x = mEyePos.x + h * 0.001f;
 	mEyePos.z = mEyePos.z + v * 0.001f;
 
+	mEyePos.y = mRadius * cosf( mPhi );
+	
+
 	// Build the view matrix.
 	XMVECTOR pos = XMVectorSet( mEyePos.x, mEyePos.y, mEyePos.z, 1.0f );
-	XMVECTOR target = XMVectorZero();
+	XMVECTOR target = XMVector3Normalize( pos );
 	XMVECTOR up = XMVectorSet( 0.0f, 1.0f, 0.0f, 0.0f );
 
 	XMMATRIX view = XMMatrixLookAtLH( pos, target, up );
@@ -464,13 +470,13 @@ void CrateApp::UpdateObjectCBs( const GameTimer& gt )
 			XMMATRIX texTransform = XMLoadFloat4x4( &e->TexTransform );
 
 			ObjectConstants objConstants;
-			XMMATRIX x = XMMatrixRotationX( rot[0] );
-			XMMATRIX y = XMMatrixRotationY( rot[1] );
-			XMMATRIX z = XMMatrixRotationZ( rot[2] );
+			XMMATRIX x = XMMatrixRotationX( cube->rotation.x );
+			XMMATRIX y = XMMatrixRotationY( cube->rotation.y );
+			XMMATRIX z = XMMatrixRotationZ( cube->rotation.z );
 
-			XMMATRIX s = XMMatrixScaling( scale[0], scale[1], scale[2] );
+			XMMATRIX s = XMMatrixScaling( cube->scale.x, cube->scale.y, cube->scale.z );
 
-			XMStoreFloat4x4( &objConstants.World, XMMatrixTranspose( world * s * (x * y * z) * (XMMatrixTranslation( pos[0], pos[1], pos[2] ))) );
+			XMStoreFloat4x4( &objConstants.World, XMMatrixTranspose( world * s * (x * y * z) * (XMMatrixTranslation( cube->position.x, cube->position.y, cube->position.z ))) );
 			XMStoreFloat4x4( &objConstants.TexTransform, XMMatrixTranspose( texTransform ) );
 
 			currObjectCB->CopyData( e->ObjCBIndex, objConstants );
@@ -893,18 +899,82 @@ void CrateApp::DrawRenderItems( ID3D12GraphicsCommandList* cmdList, const std::v
 
 		cmdList->DrawIndexedInstanced( ri->IndexCount, 1, ri->StartIndexLocation, ri->BaseVertexLocation, 0 );
 	}
+	static bool console_open;
+	static trigger::ui::console console(world);
+	if( ImGui::BeginMainMenuBar() )
+	{
+		if( ImGui::BeginMenu( "Action" ) )
+		{
+			if( ImGui::MenuItem( "Save" ) )
+			{
+				console.AddLog( "[log] Save this World");
+			}
+			if( ImGui::MenuItem( "Save As" ) )
+			{
+				console.AddLog( "[log]  Save as ... ");
+			}
+			if( ImGui::MenuItem( "Load" ) )
+			{
+				console.AddLog( "[log] Load World");
+			}
+			ImGui::Separator();
+			if( ImGui::MenuItem( "Exit" ) )
+			{
+				console.AddLog( "[log] Bye Bye");
+				exit( 0 );
+			}
+			ImGui::EndMenu();
+		}
+		if( ImGui::BeginMenu( "Window" ) )
+		{
+			if( ImGui::MenuItem( "Console" ) )
+			{
+				if( console_open )
+				{
+					console_open = false;
+				}
+				else
+				{
+					console_open = true;
+				}
+			}
+			ImGui::EndMenu();
+		}
+		ImGui::EndMainMenuBar();
+	}
 
-	ImGui::Begin( "Control Object" );
-	ImGui::Text( "Name : %s", "Syha" );
-	ImGui::SliderFloat3( "position ", pos, -10, 10);
+	if( console_open )
+	{
+		console.Draw( "Trigger Console", &console_open );
+	}
+	
 
-	ImGui::SliderAngle( "X :", &rot[0] );
-	ImGui::SliderAngle( "Y :", &rot[1] );
-	ImGui::SliderAngle( "Z :", &rot[2] );
+	ImGui::Begin( "Controller" );
+	if( ImGui::BeginMenu( "Actions" , "some Action for this Object") )
+	{
+		if( ImGui::MenuItem( "delete" ) )
+		{
+			console.AddLog( "[log] %s is Deleted in World!", cube->name.c_str() );
+			world->delete_component( cube );
+		}
+		ImGui::EndMenu();
+	}
+	ImGui::Separator();
+	ImGui::InputText( "Name", &cube->name );
 
-	ImGui::InputFloat("W :", &scale[0]);
-	ImGui::InputFloat( "H :", &scale[1] );
-	ImGui::InputFloat( "D :", &scale[2] );
+	static float *input_pos = new float[3];
+	ImGui::InputFloat3( "position ", input_pos, -10, 10);
+	cube->position.x = input_pos[0];
+	cube->position.y = input_pos[1];
+	cube->position.z = input_pos[2];
+
+	ImGui::InputFloat( "X", &cube->rotation.x );
+	ImGui::InputFloat( "Y", &cube->rotation.y );
+	ImGui::InputFloat( "Z", &cube->rotation.z );
+
+	ImGui::InputFloat( "W", &cube->scale.x );
+	ImGui::InputFloat( "H", &cube->scale.y );
+	ImGui::InputFloat( "D", &cube->scale.z );
 
 	ImGui::End();
 
