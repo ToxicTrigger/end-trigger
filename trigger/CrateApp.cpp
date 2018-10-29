@@ -54,29 +54,29 @@ struct RenderItem
 class CrateApp : public D3DApp
 {
 public:
-	CrateApp( HINSTANCE hInstance );
-	CrateApp( const CrateApp& rhs ) = delete;
-	CrateApp& operator=( const CrateApp& rhs ) = delete;
+	CrateApp(HINSTANCE hInstance);
+	CrateApp(const CrateApp& rhs) = delete;
+	CrateApp& operator=(const CrateApp& rhs) = delete;
 	~CrateApp();
 
 	virtual bool Initialize()override;
 
 private:
 	virtual void OnResize()override;
-	virtual void Update( const GameTimer& gt )override;
-	virtual void Draw( const GameTimer& gt )override;
+	virtual void Update(const GameTimer& gt)override;
+	virtual void Draw(const GameTimer& gt)override;
 
-	virtual void OnMouseDown( WPARAM btnState, int x, int y )override;
-	virtual void OnMouseUp( WPARAM btnState, int x, int y )override;
-	virtual void OnMouseMove( WPARAM btnState, int x, int y )override;
+	virtual void OnMouseDown(WPARAM btnState, int x, int y)override;
+	virtual void OnMouseUp(WPARAM btnState, int x, int y)override;
+	virtual void OnMouseMove(WPARAM btnState, int x, int y)override;
 
-	virtual void OnKeyboardInput( WPARAM btnState )override;
-	virtual void OnKeyboardInputUp( WPARAM btnState )override;
-	void UpdateCamera( const GameTimer& gt );
-	void AnimateMaterials( const GameTimer& gt );
-	void UpdateObjectCBs( const GameTimer& gt );
-	void UpdateMaterialCBs( const GameTimer& gt );
-	void UpdateMainPassCB( const GameTimer& gt );
+	virtual void OnKeyboardInput(WPARAM btnState)override;
+	virtual void OnKeyboardInputUp(WPARAM btnState)override;
+	void UpdateCamera(const GameTimer& gt);
+	void AnimateMaterials(const GameTimer& gt);
+	void UpdateObjectCBs(const GameTimer& gt);
+	void UpdateMaterialCBs(const GameTimer& gt);
+	void UpdateMainPassCB(const GameTimer& gt);
 
 	void LoadTextures();
 	void BuildRootSignature();
@@ -87,12 +87,11 @@ private:
 	void BuildFrameResources();
 	void BuildMaterials();
 	void BuildRenderItems();
-	void DrawRenderItems( ID3D12GraphicsCommandList* cmdList, const std::vector<RenderItem*>& ritems );
+	void DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderItem*>& ritems);
 
 	std::array<const CD3DX12_STATIC_SAMPLER_DESC, 6> GetStaticSamplers();
 
 private:
-
 	std::vector<std::unique_ptr<FrameResource>> mFrameResources;
 	FrameResource* mCurrFrameResource = nullptr;
 	int mCurrFrameResourceIndex = 0;
@@ -133,57 +132,62 @@ private:
 	float * pos;
 	float * rot;
 	float * scale;
-	trigger::actor *cube;
+	trigger::actor *target;
+
+	bool console_open;
+	trigger::ui::console *console;
 
 	float h = 0, v = 0;
+
+	Camera cam;
 
 	POINT mLastMousePos;
 };
 
-int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE prevInstance,
-					PSTR cmdLine, int showCmd )
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance,
+				   PSTR cmdLine, int showCmd)
 {
 	// Enable run-time memory check for debug builds.
 #if defined(DEBUG) | defined(_DEBUG)
-	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
 
 	try
 	{
-		CrateApp theApp( hInstance );
-		if( !theApp.Initialize() )
+		CrateApp theApp(hInstance);
+		if(!theApp.Initialize())
 			return 0;
 
 		return theApp.Run();
 	}
-	catch( DxException& e )
+	catch(DxException& e)
 	{
-		MessageBox( nullptr, e.ToString().c_str(), L"HR Failed", MB_OK );
+		MessageBox(nullptr, e.ToString().c_str(), L"HR Failed", MB_OK);
 		return 0;
 	}
 }
 
-CrateApp::CrateApp( HINSTANCE hInstance )
-	: D3DApp( hInstance )
+CrateApp::CrateApp(HINSTANCE hInstance)
+	: D3DApp(hInstance)
 {}
 
 CrateApp::~CrateApp()
 {
-	if( md3dDevice != nullptr )
+	if(md3dDevice != nullptr)
 		FlushCommandQueue();
 }
 
 bool CrateApp::Initialize()
 {
-	if( !D3DApp::Initialize() )
+	if(!D3DApp::Initialize())
 		return false;
 
 	// Reset the command list to prep for initialization commands.
-	ThrowIfFailed( mCommandList->Reset( mDirectCmdListAlloc.Get(), nullptr ) );
+	ThrowIfFailed(mCommandList->Reset(mDirectCmdListAlloc.Get(), nullptr));
 
 	// Get the increment size of a descriptor in this heap type.  This is hardware specific, 
 	// so we have to query this information.
-	mCbvSrvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize( D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV );
+	mCbvSrvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 	//TEST
 	pos = new float[3];
@@ -196,16 +200,15 @@ bool CrateApp::Initialize()
 	rot[1] = 0;
 	rot[2] = 0;
 
-
 	scale = new float[3];
 	scale[0] = 0;
 	scale[1] = 0;
 	scale[2] = 0;
-
-	cube = new trigger::actor();
-	world->add( cube );
-
-	mEyePos = XMFLOAT3( 1, 1, 1 );
+	cam.SetOrthographic(false);
+	target = new trigger::actor();
+	console = new trigger::ui::console(world);
+	//mEyePos = XMFLOAT3(1, 1, 1);
+	cam.SetLens(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, 1000.0f);
 
 	LoadTextures();
 	BuildRootSignature();
@@ -218,9 +221,9 @@ bool CrateApp::Initialize()
 	BuildPSOs();
 
 	// Execute the initialization commands.
-	ThrowIfFailed( mCommandList->Close() );
+	ThrowIfFailed(mCommandList->Close());
 	ID3D12CommandList* cmdsLists[] = {mCommandList.Get()};
-	mCommandQueue->ExecuteCommandLists( _countof( cmdsLists ), cmdsLists );
+	mCommandQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
 
 	// Wait until initialization is complete.
 	FlushCommandQueue();
@@ -232,14 +235,17 @@ void CrateApp::OnResize()
 {
 	D3DApp::OnResize();
 
+	cam.SetLens(0.6f * MathHelper::Pi, AspectRatio(), 1.0f, 1000.0f);
+
 	// The window resized, so update the aspect ratio and recompute the projection matrix.
-	XMMATRIX P = XMMatrixPerspectiveFovLH( 0.25f*MathHelper::Pi, AspectRatio(), 1.0f, 1000.0f );
-	XMStoreFloat4x4( &mProj, P );
+	//XMMATRIX P = XMMatrixPerspectiveFovLH(0.25f*MathHelper::Pi, AspectRatio(), 1.0f, 1000.0f);
+	//XMMATRIX P = cam.GetProj();
+	//XMStoreFloat4x4(&mProj, P);
 }
 
-void CrateApp::Update( const GameTimer& gt )
+void CrateApp::Update(const GameTimer& gt)
 {
-	UpdateCamera( gt );
+	UpdateCamera(gt);
 
 	// Cycle through the circular frame resource array.
 	mCurrFrameResourceIndex = (mCurrFrameResourceIndex + 1) % gNumFrameResources;
@@ -247,70 +253,70 @@ void CrateApp::Update( const GameTimer& gt )
 
 	// Has the GPU finished processing the commands of the current frame resource?
 	// If not, wait until the GPU has completed commands up to this fence point.
-	if( mCurrFrameResource->Fence != 0 && mFence->GetCompletedValue() < mCurrFrameResource->Fence )
+	if(mCurrFrameResource->Fence != 0 && mFence->GetCompletedValue() < mCurrFrameResource->Fence)
 	{
-		HANDLE eventHandle = CreateEventEx( nullptr, false, false, EVENT_ALL_ACCESS );
-		ThrowIfFailed( mFence->SetEventOnCompletion( mCurrFrameResource->Fence, eventHandle ) );
-		WaitForSingleObject( eventHandle, INFINITE );
-		CloseHandle( eventHandle );
+		HANDLE eventHandle = CreateEventEx(nullptr, false, false, EVENT_ALL_ACCESS);
+		ThrowIfFailed(mFence->SetEventOnCompletion(mCurrFrameResource->Fence, eventHandle));
+		WaitForSingleObject(eventHandle, INFINITE);
+		CloseHandle(eventHandle);
 	}
 
-	AnimateMaterials( gt );
-	UpdateObjectCBs( gt );
-	UpdateMaterialCBs( gt );
-	UpdateMainPassCB( gt );
+	AnimateMaterials(gt);
+	UpdateObjectCBs(gt);
+	UpdateMaterialCBs(gt);
+	UpdateMainPassCB(gt);
 }
 
 
-void CrateApp::Draw( const GameTimer& gt )
+void CrateApp::Draw(const GameTimer& gt)
 {
 	auto cmdListAlloc = mCurrFrameResource->CmdListAlloc;
 
 	// Reuse the memory associated with command recording.
 	// We can only reset when the associated command lists have finished execution on the GPU.
-	ThrowIfFailed( cmdListAlloc->Reset() );
+	ThrowIfFailed(cmdListAlloc->Reset());
 
 	// A command list can be reset after it has been added to the command queue via ExecuteCommandList.
 	// Reusing the command list reuses memory.
-	ThrowIfFailed( mCommandList->Reset( cmdListAlloc.Get(), mOpaquePSO.Get() ) );
+	ThrowIfFailed(mCommandList->Reset(cmdListAlloc.Get(), mOpaquePSO.Get()));
 
-	mCommandList->RSSetViewports( 1, &mScreenViewport );
-	mCommandList->RSSetScissorRects( 1, &mScissorRect );
+	mCommandList->RSSetViewports(1, &mScreenViewport);
+	mCommandList->RSSetScissorRects(1, &mScissorRect);
 
 	// Indicate a state transition on the resource usage.
-	mCommandList->ResourceBarrier( 1, &CD3DX12_RESOURCE_BARRIER::Transition( CurrentBackBuffer(),
-																			 D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET ) );
+	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
+																		   D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
 
 	// Clear the back buffer and depth buffer.
-	mCommandList->ClearRenderTargetView( CurrentBackBufferView(), Colors::LightSteelBlue, 0, nullptr );
-	mCommandList->ClearDepthStencilView( DepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr );
+	mCommandList->ClearRenderTargetView(CurrentBackBufferView(), Colors::LightSteelBlue, 0, nullptr);
+	mCommandList->ClearDepthStencilView(DepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 
 	// Specify the buffers we are going to render to.
-	mCommandList->OMSetRenderTargets( 1, &CurrentBackBufferView(), true, &DepthStencilView() );
+	mCommandList->OMSetRenderTargets(1, &CurrentBackBufferView(), true, &DepthStencilView());
 
 	ID3D12DescriptorHeap* descriptorHeaps[] = {mSrvDescriptorHeap.Get()};
-	mCommandList->SetDescriptorHeaps( _countof( descriptorHeaps ), descriptorHeaps );
+	mCommandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
 
-	mCommandList->SetGraphicsRootSignature( mRootSignature.Get() );
+	mCommandList->SetGraphicsRootSignature(mRootSignature.Get());
 
 	auto passCB = mCurrFrameResource->PassCB->Resource();
-	mCommandList->SetGraphicsRootConstantBufferView( 2, passCB->GetGPUVirtualAddress() );
+	mCommandList->SetGraphicsRootConstantBufferView(2, passCB->GetGPUVirtualAddress());
 
-	DrawRenderItems( mCommandList.Get(), mOpaqueRitems );
+	DrawRenderItems(mCommandList.Get(), mOpaqueRitems);
 
 	// Indicate a state transition on the resource usage.
-	mCommandList->ResourceBarrier( 1, &CD3DX12_RESOURCE_BARRIER::Transition( CurrentBackBuffer(),
-																			 D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT ) );
+	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
+																		   D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
 
 	// Done recording commands.
-	ThrowIfFailed( mCommandList->Close() );
+	ThrowIfFailed(mCommandList->Close());
 
 	// Add the command list to the queue for execution.
 	ID3D12CommandList* cmdsLists[] = {mCommandList.Get()};
-	mCommandQueue->ExecuteCommandLists( _countof( cmdsLists ), cmdsLists );
+	mCommandQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
 
 	// Swap the back and front buffers
-	ThrowIfFailed( mSwapChain->Present( 0, 0 ) );
+	ThrowIfFailed(mSwapChain->Present(0, 0));
 	mCurrBackBuffer = (mCurrBackBuffer + 1) % SwapChainBufferCount;
 
 	// Advance the fence value to mark commands up to this fence point.
@@ -319,167 +325,178 @@ void CrateApp::Draw( const GameTimer& gt )
 	// Add an instruction to the command queue to set a new fence point. 
 	// Because we are on the GPU timeline, the new fence point won't be 
 	// set until the GPU finishes processing all the commands prior to this Signal().
-	mCommandQueue->Signal( mFence.Get(), mCurrentFence );
+	mCommandQueue->Signal(mFence.Get(), mCurrentFence);
 }
 
-void CrateApp::OnMouseDown( WPARAM btnState, int x, int y )
+void CrateApp::OnMouseDown(WPARAM btnState, int x, int y)
 {
-	if( btnState & MK_LBUTTON )
+	if(btnState & MK_LBUTTON)
 	{
 		//ray
-		XMVECTOR mouseNear = XMVectorSet( (float)mLastMousePos.x, (float)mLastMousePos.y, 0.0f, 0.0f );
-		XMVECTOR mouseFar = XMVectorSet( (float)mLastMousePos.x, (float)mLastMousePos.y, 1.0f, 0.0f );
-		XMMATRIX pro = XMLoadFloat4x4( &mMainPassCB.Proj );
-		XMMATRIX view = XMLoadFloat4x4( &mMainPassCB.View );
+		XMVECTOR mouseNear = XMVectorSet((float)mLastMousePos.x, (float)mLastMousePos.y, 0.0f, 0.0f);
+		XMVECTOR mouseFar = XMVectorSet((float)mLastMousePos.x, (float)mLastMousePos.y, 1.0f, 0.0f);
+		XMMATRIX pro = XMLoadFloat4x4(&mMainPassCB.Proj);
+		XMMATRIX view = XMLoadFloat4x4(&mMainPassCB.View);
 
-		XMVECTOR unprojected_near = XMVector3Unproject( mouseNear, 0, 0, mScreenViewport.Width, mScreenViewport.Height,
-														mMainPassCB.NearZ, mMainPassCB.FarZ,
-														pro, view, XMMatrixIdentity() );
-
-		XMVECTOR unprojected_far = XMVector3Unproject( mouseFar, 0, 0, mScreenViewport.Width, mScreenViewport.Height,
+		XMVECTOR unprojected_near = XMVector3Unproject(mouseNear, 0, 0, mScreenViewport.Width, mScreenViewport.Height,
 													   mMainPassCB.NearZ, mMainPassCB.FarZ,
-													   pro, view, XMMatrixIdentity() );
-		XMVECTOR result = DirectX::XMVector3Normalize( DirectX::XMVectorSubtract( unprojected_far, unprojected_near ) );
+													   pro, view, XMMatrixIdentity());
 
-		XMStoreFloat3( &direction, result );
+		XMVECTOR unprojected_far = XMVector3Unproject(mouseFar, 0, 0, mScreenViewport.Width, mScreenViewport.Height,
+													  mMainPassCB.NearZ, mMainPassCB.FarZ,
+													  pro, view, XMMatrixIdentity());
+		XMVECTOR result = DirectX::XMVector3Normalize(DirectX::XMVectorSubtract(unprojected_far, unprojected_near));
+
+		XMStoreFloat3(&direction, result);
 	}
 
 
 	mLastMousePos.x = x;
 	mLastMousePos.y = y;
 
-	SetCapture( mhMainWnd );
+	SetCapture(mhMainWnd);
 }
 
-void CrateApp::OnMouseUp( WPARAM btnState, int x, int y )
+void CrateApp::OnMouseUp(WPARAM btnState, int x, int y)
 {
 	ReleaseCapture();
 }
 
-void CrateApp::OnMouseMove( WPARAM btnState, int x, int y )
+void CrateApp::OnMouseMove(WPARAM btnState, int x, int y)
 {
-	if( (btnState & MK_RBUTTON) != 0 )
+	if((btnState & MK_RBUTTON) != 0)
 	{
 		// Make each pixel correspond to a quarter of a degree.
-		float dx = XMConvertToRadians( 0.25f*static_cast<float>(x - mLastMousePos.x) );
-		float dy = XMConvertToRadians( 0.25f*static_cast<float>(y - mLastMousePos.y) );
+		float dx = XMConvertToRadians(0.25f*static_cast<float>(x - mLastMousePos.x));
+		float dy = XMConvertToRadians(0.25f*static_cast<float>(y - mLastMousePos.y));
 
+		cam.Pitch(dy);
+		cam.RotateY(dx);
+		//console.AddLog("[log] %f, %f", dx, dy);
 		// Update angles based on input to orbit camera around box.
-		mTheta += dx;
-		mPhi += dy;
+		//mTheta += dx;
+		//mPhi += dy;
 
 		// Restrict the angle mPhi.
-		mPhi = MathHelper::Clamp( mPhi, 0.1f, MathHelper::Pi - 0.1f );
+		//mPhi = MathHelper::Clamp(mPhi, 0.1f, MathHelper::Pi - 0.1f);
 		//OnKeyboardInput( btnState );
 	}
-	/*
-	else if( (btnState & MK_RBUTTON) != 0 )
-	{
-		// Make each pixel correspond to 0.2 unit in the scene.
-		float dx = 0.05f*static_cast<float>(x - mLastMousePos.x);
-		float dy = 0.05f*static_cast<float>(y - mLastMousePos.y);
-
-		// Update the camera radius based on input.
-		mRadius += dx - dy;
-
-		// Restrict the radius.
-		mRadius = MathHelper::Clamp( mRadius, 5.0f, 150.0f );
-	}*/
 
 	mLastMousePos.x = x;
 	mLastMousePos.y = y;
 }
 
-void CrateApp::OnKeyboardInputUp( WPARAM btnState )
+void CrateApp::OnKeyboardInputUp(WPARAM btnState)
 {
-	
-	if( btnState == 87 || btnState == 0x53 )
+	if(btnState == 87 || btnState == 0x53)
 	{
 		v = 0;
+		
 	}
-	if( btnState == 0x41 || btnState == 0x44 )
+	if(btnState == 0x41 || btnState == 0x44)
 	{
 		h = 0;
 	}
 }
 
-void CrateApp::OnKeyboardInput( WPARAM btnState )
+void CrateApp::OnKeyboardInput(WPARAM btnState)
 {
-	if( btnState == 87 || btnState == 0x53 )
+	if(btnState == 87 || btnState == 0x53)
 	{
-		if( btnState == 87 )
+		if(btnState == 87)
 		{
 			v = 1;
 		}
-		else if( btnState == 0x53 )
+		else if(btnState == 0x53)
 		{
 			v = -1;
 		}
 	}
-	
 
-	if( btnState == 0x41 || btnState == 0x44 )
+
+	if(btnState == 0x41 || btnState == 0x44)
 	{
-		if( btnState == 0x41 )
+		if(btnState == 0x41)
 		{
 			h = 1;
 		}
-		if( btnState == 0x44 )
+		if(btnState == 0x44)
 		{
 			h = -1;
 		}
 	}
 }
 
-void CrateApp::UpdateCamera( const GameTimer& gt )
+void CrateApp::UpdateCamera(const GameTimer& gt)
 {
-	// Convert Spherical to Cartesian coordinates.
-	//mEyePos.x = mRadius * sinf( mPhi )*cosf( mTheta );
-	//mEyePos.z = mRadius * sinf( mPhi )*sinf( mTheta );
-	mEyePos.x = mEyePos.x + h * 0.001f;
-	mEyePos.z = mEyePos.z + v * 0.001f;
+	if(GetAsyncKeyState('W') & 0x8000)
+	{
+		cam.Walk(1.0f * gt.DeltaTime());
+	}
 
-	mEyePos.y = mRadius * cosf( mPhi );
-	
+	if(GetAsyncKeyState('S') & 0x8000)
+	{
+		cam.Walk(-1.0f * gt.DeltaTime());
+	}
+	if(GetAsyncKeyState('A') & 0x8000)
+	{
+		cam.Strafe(-1.0f * gt.DeltaTime());
+	}
+	if(GetAsyncKeyState('D') & 0x8000)
+	{
+		cam.Strafe(1.0f * gt.DeltaTime());
+	}
+
+	// Convert Spherical to Cartesian coordinates.
+	//mEyePos.x = mEyePos.x  + h * 0.001f * (sinf( mPhi )*cosf( mTheta ));
+	//mEyePos.z = mEyePos.z + v * 0.001f * (sinf( mPhi )*sinf( mTheta ));
+	//mEyePos.x = mEyePos.x + h * 0.001f;
+	//mEyePos.z = mEyePos.z + v * 0.001f;
+	//mEyePos.y = mRadius * cosf(mPhi);
 
 	// Build the view matrix.
-	XMVECTOR pos = XMVectorSet( mEyePos.x, mEyePos.y, mEyePos.z, 1.0f );
-	XMVECTOR target = XMVector3Normalize( pos );
-	XMVECTOR up = XMVectorSet( 0.0f, 1.0f, 0.0f, 0.0f );
+	//XMVECTOR pos = XMVectorSet(mEyePos.x, mEyePos.y, mEyePos.z, 1.0f);
+	//XMVECTOR target =  XMVector3Normalize(pos) - pos;
+	//XMVECTOR target = XMVectorZero();
+	//XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 
-	XMMATRIX view = XMMatrixLookAtLH( pos, target, up );
-	XMStoreFloat4x4( &mView, view );
+	//XMMATRIX view = XMMatrixLookAtLH(pos, target, up);
+	cam.UpdateViewMatrix();
+	XMMATRIX view = cam.GetView();
+	XMMATRIX p = cam.GetProj();
 
+	XMStoreFloat4x4(&mView, view);
+	XMStoreFloat4x4(&mProj, p);
 }
 
-void CrateApp::AnimateMaterials( const GameTimer& gt )
+void CrateApp::AnimateMaterials(const GameTimer& gt)
 {
 
 }
 
-void CrateApp::UpdateObjectCBs( const GameTimer& gt )
+void CrateApp::UpdateObjectCBs(const GameTimer& gt)
 {
 	auto currObjectCB = mCurrFrameResource->ObjectCB.get();
-	for( auto& e : mAllRitems )
+	for(auto& e : mAllRitems)
 	{
 		// Only update the cbuffer data if the constants have changed.  
 		// This needs to be tracked per frame resource.
-		if( e->NumFramesDirty > 0 )
+		if(e->NumFramesDirty > 0)
 		{
-			XMMATRIX world = XMLoadFloat4x4( &e->World );
-			XMMATRIX texTransform = XMLoadFloat4x4( &e->TexTransform );
+			XMMATRIX world = XMLoadFloat4x4(&e->World);
+			XMMATRIX texTransform = XMLoadFloat4x4(&e->TexTransform);
 
 			ObjectConstants objConstants;
-			XMMATRIX x = XMMatrixRotationX( cube->rotation.x );
-			XMMATRIX y = XMMatrixRotationY( cube->rotation.y );
-			XMMATRIX z = XMMatrixRotationZ( cube->rotation.z );
+			XMMATRIX x = XMMatrixRotationX(target->rotation.x);
+			XMMATRIX y = XMMatrixRotationY(target->rotation.y);
+			XMMATRIX z = XMMatrixRotationZ(target->rotation.z);
 
-			XMMATRIX s = XMMatrixScaling( cube->scale.x, cube->scale.y, cube->scale.z );
+			XMMATRIX s = XMMatrixScaling(target->scale.x, target->scale.y, target->scale.z);
 
-			XMStoreFloat4x4( &objConstants.World, XMMatrixTranspose( world * s * (x * y * z) * (XMMatrixTranslation( cube->position.x, cube->position.y, cube->position.z ))) );
-			XMStoreFloat4x4( &objConstants.TexTransform, XMMatrixTranspose( texTransform ) );
+			XMStoreFloat4x4(&objConstants.World, XMMatrixTranspose(world * s * (x * y * z) * (XMMatrixTranslation(target->position.x, target->position.y, target->position.z))));
+			XMStoreFloat4x4(&objConstants.TexTransform, XMMatrixTranspose(texTransform));
 
-			currObjectCB->CopyData( e->ObjCBIndex, objConstants );
+			currObjectCB->CopyData(e->ObjCBIndex, objConstants);
 
 			// Next FrameResource need to be updated too.
 			//e->NumFramesDirty--;
@@ -487,25 +504,25 @@ void CrateApp::UpdateObjectCBs( const GameTimer& gt )
 	}
 }
 
-void CrateApp::UpdateMaterialCBs( const GameTimer& gt )
+void CrateApp::UpdateMaterialCBs(const GameTimer& gt)
 {
 	auto currMaterialCB = mCurrFrameResource->MaterialCB.get();
-	for( auto& e : mMaterials )
+	for(auto& e : mMaterials)
 	{
 		// Only update the cbuffer data if the constants have changed.  If the cbuffer
 		// data changes, it needs to be updated for each FrameResource.
 		Material* mat = e.second.get();
-		if( mat->NumFramesDirty > 0 )
+		if(mat->NumFramesDirty > 0)
 		{
-			XMMATRIX matTransform = XMLoadFloat4x4( &mat->MatTransform );
+			XMMATRIX matTransform = XMLoadFloat4x4(&mat->MatTransform);
 
 			MaterialConstants matConstants;
 			matConstants.DiffuseAlbedo = mat->DiffuseAlbedo;
 			matConstants.FresnelR0 = mat->FresnelR0;
 			matConstants.Roughness = mat->Roughness;
-			XMStoreFloat4x4( &matConstants.MatTransform, XMMatrixTranspose( matTransform ) );
+			XMStoreFloat4x4(&matConstants.MatTransform, XMMatrixTranspose(matTransform));
 
-			currMaterialCB->CopyData( mat->MatCBIndex, matConstants );
+			currMaterialCB->CopyData(mat->MatCBIndex, matConstants);
 
 			// Next FrameResource need to be updated too.
 			mat->NumFramesDirty--;
@@ -513,25 +530,25 @@ void CrateApp::UpdateMaterialCBs( const GameTimer& gt )
 	}
 }
 
-void CrateApp::UpdateMainPassCB( const GameTimer& gt )
+void CrateApp::UpdateMainPassCB(const GameTimer& gt)
 {
-	XMMATRIX view = XMLoadFloat4x4( &mView );
-	XMMATRIX proj = XMLoadFloat4x4( &mProj );
+	XMMATRIX view = XMLoadFloat4x4(&mView);
+	XMMATRIX proj = XMLoadFloat4x4(&mProj);
 
-	XMMATRIX viewProj = XMMatrixMultiply( view, proj );
-	XMMATRIX invView = XMMatrixInverse( &XMMatrixDeterminant( view ), view );
-	XMMATRIX invProj = XMMatrixInverse( &XMMatrixDeterminant( proj ), proj );
-	XMMATRIX invViewProj = XMMatrixInverse( &XMMatrixDeterminant( viewProj ), viewProj );
+	XMMATRIX viewProj = XMMatrixMultiply(view, proj);
+	XMMATRIX invView = XMMatrixInverse(&XMMatrixDeterminant(view), view);
+	XMMATRIX invProj = XMMatrixInverse(&XMMatrixDeterminant(proj), proj);
+	XMMATRIX invViewProj = XMMatrixInverse(&XMMatrixDeterminant(viewProj), viewProj);
 
-	XMStoreFloat4x4( &mMainPassCB.View, XMMatrixTranspose( view ) );
-	XMStoreFloat4x4( &mMainPassCB.InvView, XMMatrixTranspose( invView ) );
-	XMStoreFloat4x4( &mMainPassCB.Proj, XMMatrixTranspose( proj ) );
-	XMStoreFloat4x4( &mMainPassCB.InvProj, XMMatrixTranspose( invProj ) );
-	XMStoreFloat4x4( &mMainPassCB.ViewProj, XMMatrixTranspose( viewProj ) );
-	XMStoreFloat4x4( &mMainPassCB.InvViewProj, XMMatrixTranspose( invViewProj ) );
+	XMStoreFloat4x4(&mMainPassCB.View, XMMatrixTranspose(view));
+	XMStoreFloat4x4(&mMainPassCB.InvView, XMMatrixTranspose(invView));
+	XMStoreFloat4x4(&mMainPassCB.Proj, XMMatrixTranspose(proj));
+	XMStoreFloat4x4(&mMainPassCB.InvProj, XMMatrixTranspose(invProj));
+	XMStoreFloat4x4(&mMainPassCB.ViewProj, XMMatrixTranspose(viewProj));
+	XMStoreFloat4x4(&mMainPassCB.InvViewProj, XMMatrixTranspose(invViewProj));
 	mMainPassCB.EyePosW = mEyePos;
-	mMainPassCB.RenderTargetSize = XMFLOAT2( (float)mClientWidth, (float)mClientHeight );
-	mMainPassCB.InvRenderTargetSize = XMFLOAT2( 1.0f / mClientWidth, 1.0f / mClientHeight );
+	mMainPassCB.RenderTargetSize = XMFLOAT2((float)mClientWidth, (float)mClientHeight);
+	mMainPassCB.InvRenderTargetSize = XMFLOAT2(1.0f / mClientWidth, 1.0f / mClientHeight);
 	mMainPassCB.NearZ = 1.0f;
 	mMainPassCB.FarZ = 1000.0f;
 	mMainPassCB.TotalTime = gt.TotalTime();
@@ -545,8 +562,7 @@ void CrateApp::UpdateMainPassCB( const GameTimer& gt )
 	mMainPassCB.Lights[2].Strength = {0.15f, 0.15f, 0.15f};
 
 	auto currPassCB = mCurrFrameResource->PassCB.get();
-	currPassCB->CopyData( 0, mMainPassCB );
-
+	currPassCB->CopyData(0, mMainPassCB);
 }
 
 void CrateApp::LoadTextures()
@@ -554,67 +570,67 @@ void CrateApp::LoadTextures()
 	auto woodCrateTex = std::make_unique<Texture>();
 	woodCrateTex->Name = "woodCrateTex";
 	woodCrateTex->Filename = L"../tools/ui_heart_dot.DDS";
-	ThrowIfFailed( DirectX::CreateDDSTextureFromFile12( md3dDevice.Get(),
-														mCommandList.Get(), woodCrateTex->Filename.c_str(),
-														woodCrateTex->Resource, woodCrateTex->UploadHeap ) );
+	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(md3dDevice.Get(),
+													  mCommandList.Get(), woodCrateTex->Filename.c_str(),
+													  woodCrateTex->Resource, woodCrateTex->UploadHeap));
 
 	auto woodCrateTex1 = std::make_unique<Texture>();
 	woodCrateTex1->Name = "woodCrateTex1";
 	woodCrateTex1->Filename = L"../tools/ui_heart_dot.DDS";
-	ThrowIfFailed( DirectX::CreateDDSTextureFromFile12( md3dDevice.Get(),
-														mCommandList.Get(), woodCrateTex1->Filename.c_str(),
-														woodCrateTex1->Resource, woodCrateTex1->UploadHeap ) );
+	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(md3dDevice.Get(),
+													  mCommandList.Get(), woodCrateTex1->Filename.c_str(),
+													  woodCrateTex1->Resource, woodCrateTex1->UploadHeap));
 
 	auto woodCrateTex2 = std::make_unique<Texture>();
 	woodCrateTex2->Name = "woodCrateTex2";
 	woodCrateTex2->Filename = L"../tools/ui_heart_dot.DDS";
-	ThrowIfFailed( DirectX::CreateDDSTextureFromFile12( md3dDevice.Get(),
-														mCommandList.Get(), woodCrateTex2->Filename.c_str(),
-														woodCrateTex2->Resource, woodCrateTex2->UploadHeap ) );
+	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(md3dDevice.Get(),
+													  mCommandList.Get(), woodCrateTex2->Filename.c_str(),
+													  woodCrateTex2->Resource, woodCrateTex2->UploadHeap));
 
-	mTextures[woodCrateTex->Name] = std::move( woodCrateTex );
-	mTextures[woodCrateTex1->Name] = std::move( woodCrateTex1 );
-	mTextures[woodCrateTex2->Name] = std::move( woodCrateTex2 );
+	mTextures[woodCrateTex->Name] = std::move(woodCrateTex);
+	mTextures[woodCrateTex1->Name] = std::move(woodCrateTex1);
+	mTextures[woodCrateTex2->Name] = std::move(woodCrateTex2);
 }
 
 void CrateApp::BuildRootSignature()
 {
 	CD3DX12_DESCRIPTOR_RANGE texTable;
-	texTable.Init( D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0 );
+	texTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);
 
 	// Root parameter can be a table, root descriptor or root constants.
 	CD3DX12_ROOT_PARAMETER slotRootParameter[4];
 
 	// Perfomance TIP: Order from most frequent to least frequent.
-	slotRootParameter[0].InitAsDescriptorTable( 1, &texTable, D3D12_SHADER_VISIBILITY_PIXEL );
-	slotRootParameter[1].InitAsConstantBufferView( 0 );
-	slotRootParameter[2].InitAsConstantBufferView( 1 );
-	slotRootParameter[3].InitAsConstantBufferView( 2 );
+	slotRootParameter[0].InitAsDescriptorTable(1, &texTable, D3D12_SHADER_VISIBILITY_PIXEL);
+	slotRootParameter[1].InitAsConstantBufferView(0);
+	slotRootParameter[2].InitAsConstantBufferView(1);
+	slotRootParameter[3].InitAsConstantBufferView(2);
 
 	auto staticSamplers = GetStaticSamplers();
 
 	// A root signature is an array of root parameters.
-	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc( 4, slotRootParameter,
+	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(4, slotRootParameter,
 		(UINT)staticSamplers.size(), staticSamplers.data(),
-											 D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT );
+											D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 	// create a root signature with a single slot which points to a descriptor range consisting of a single constant buffer
 	ComPtr<ID3DBlob> serializedRootSig = nullptr;
 	ComPtr<ID3DBlob> errorBlob = nullptr;
-	HRESULT hr = D3D12SerializeRootSignature( &rootSigDesc, D3D_ROOT_SIGNATURE_VERSION_1,
-											  serializedRootSig.GetAddressOf(), errorBlob.GetAddressOf() );
+	HRESULT hr = D3D12SerializeRootSignature(&rootSigDesc, D3D_ROOT_SIGNATURE_VERSION_1,
+											 serializedRootSig.GetAddressOf(), errorBlob.GetAddressOf());
 
-	if( errorBlob != nullptr )
+	if(errorBlob != nullptr)
 	{
-		::OutputDebugStringA( (char*)errorBlob->GetBufferPointer() );
+		::OutputDebugStringA((char*)errorBlob->GetBufferPointer());
 	}
-	ThrowIfFailed( hr );
+	ThrowIfFailed(hr);
 
-	ThrowIfFailed( md3dDevice->CreateRootSignature(
+	ThrowIfFailed(md3dDevice->CreateRootSignature(
 		0,
 		serializedRootSig->GetBufferPointer(),
 		serializedRootSig->GetBufferSize(),
-		IID_PPV_ARGS( mRootSignature.GetAddressOf() ) ) );
+		IID_PPV_ARGS(mRootSignature.GetAddressOf())));
 }
 
 void CrateApp::BuildDescriptorHeaps()
@@ -626,20 +642,20 @@ void CrateApp::BuildDescriptorHeaps()
 	srvHeapDesc.NumDescriptors = 4;
 	srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-	ThrowIfFailed( md3dDevice->CreateDescriptorHeap( &srvHeapDesc, IID_PPV_ARGS( &mSrvDescriptorHeap ) ) );
+	ThrowIfFailed(md3dDevice->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&mSrvDescriptorHeap)));
 
-	CD3DX12_CPU_DESCRIPTOR_HANDLE hDescriptor( mSrvDescriptorHeap->GetCPUDescriptorHandleForHeapStart() );
+	CD3DX12_CPU_DESCRIPTOR_HANDLE hDescriptor(mSrvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 
 	{
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
-		ImGui_ImplWin32_Init( mhMainWnd );
-		ImGui_ImplDX12_Init( md3dDevice.Get(), 3, DXGI_FORMAT_R8G8B8A8_UNORM,
-							 mSrvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
-							 mSrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart() );
+		ImGui_ImplWin32_Init(mhMainWnd);
+		ImGui_ImplDX12_Init(md3dDevice.Get(), 3, DXGI_FORMAT_R8G8B8A8_UNORM,
+							mSrvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
+							mSrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 	}
-	hDescriptor.Offset( 1, mCbvSrvDescriptorSize );
+	hDescriptor.Offset(1, mCbvSrvDescriptorSize);
 	{
 		auto woodCrateTex = mTextures["woodCrateTex"]->Resource;
 		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
@@ -649,9 +665,9 @@ void CrateApp::BuildDescriptorHeaps()
 		srvDesc.Texture2D.MostDetailedMip = 0;
 		srvDesc.Texture2D.MipLevels = woodCrateTex->GetDesc().MipLevels;
 		srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
-		md3dDevice->CreateShaderResourceView( woodCrateTex.Get(), &srvDesc, hDescriptor );
+		md3dDevice->CreateShaderResourceView(woodCrateTex.Get(), &srvDesc, hDescriptor);
 	}
-	hDescriptor.Offset( 1, mCbvSrvDescriptorSize );
+	hDescriptor.Offset(1, mCbvSrvDescriptorSize);
 	{
 		auto woodCrateTex = mTextures["woodCrateTex1"]->Resource;
 		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
@@ -661,9 +677,9 @@ void CrateApp::BuildDescriptorHeaps()
 		srvDesc.Texture2D.MostDetailedMip = 0;
 		srvDesc.Texture2D.MipLevels = woodCrateTex->GetDesc().MipLevels;
 		srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
-		md3dDevice->CreateShaderResourceView( woodCrateTex.Get(), &srvDesc, hDescriptor );
+		md3dDevice->CreateShaderResourceView(woodCrateTex.Get(), &srvDesc, hDescriptor);
 	}
-	hDescriptor.Offset( 1, mCbvSrvDescriptorSize );
+	hDescriptor.Offset(1, mCbvSrvDescriptorSize);
 	{
 		auto woodCrateTex = mTextures["woodCrateTex2"]->Resource;
 		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
@@ -673,15 +689,15 @@ void CrateApp::BuildDescriptorHeaps()
 		srvDesc.Texture2D.MostDetailedMip = 0;
 		srvDesc.Texture2D.MipLevels = woodCrateTex->GetDesc().MipLevels;
 		srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
-		md3dDevice->CreateShaderResourceView( woodCrateTex.Get(), &srvDesc, hDescriptor );
+		md3dDevice->CreateShaderResourceView(woodCrateTex.Get(), &srvDesc, hDescriptor);
 	}
 }
 
 
 void CrateApp::BuildShadersAndInputLayout()
 {
-	mShaders["standardVS"] = d3dUtil::CompileShader( L"Shaders\\Default.hlsl", nullptr, "VS", "vs_5_0" );
-	mShaders["opaquePS"] = d3dUtil::CompileShader( L"Shaders\\Default.hlsl", nullptr, "PS", "ps_5_0" );
+	mShaders["standardVS"] = d3dUtil::CompileShader(L"Shaders\\Default.hlsl", nullptr, "VS", "vs_5_0");
+	mShaders["opaquePS"] = d3dUtil::CompileShader(L"Shaders\\Default.hlsl", nullptr, "PS", "ps_5_0");
 
 	mInputLayout =
 	{
@@ -691,20 +707,19 @@ void CrateApp::BuildShadersAndInputLayout()
 	};
 }
 
-
 void CrateApp::BuildShapeGeometry()
 {
 	GeometryGenerator geoGen;
-	GeometryGenerator::MeshData box = geoGen.CreateBox( 1.0f, 1.0f, 1.0f, 3 );
+	GeometryGenerator::MeshData box = geoGen.CreateBox(1.0f, 1.0f, 1.0f, 3);
 
 	SubmeshGeometry boxSubmesh;
 	boxSubmesh.IndexCount = (UINT)box.Indices32.size();
 	boxSubmesh.StartIndexLocation = 0;
 	boxSubmesh.BaseVertexLocation = 0;
 
-	std::vector<Vertex> vertices( box.Vertices.size() );
+	std::vector<Vertex> vertices(box.Vertices.size());
 
-	for( size_t i = 0; i < box.Vertices.size(); ++i )
+	for(size_t i = 0; i < box.Vertices.size(); ++i)
 	{
 		vertices[i].Pos = box.Vertices[i].Position;
 		vertices[i].Normal = box.Vertices[i].Normal;
@@ -713,32 +728,32 @@ void CrateApp::BuildShapeGeometry()
 
 	std::vector<std::uint16_t> indices = box.GetIndices16();
 
-	const UINT vbByteSize = (UINT)vertices.size() * sizeof( Vertex );
-	const UINT ibByteSize = (UINT)indices.size() * sizeof( std::uint16_t );
+	const UINT vbByteSize = (UINT)vertices.size() * sizeof(Vertex);
+	const UINT ibByteSize = (UINT)indices.size() * sizeof(std::uint16_t);
 
 	auto geo = std::make_unique<MeshGeometry>();
 	geo->Name = "boxGeo";
 
-	ThrowIfFailed( D3DCreateBlob( vbByteSize, &geo->VertexBufferCPU ) );
-	CopyMemory( geo->VertexBufferCPU->GetBufferPointer(), vertices.data(), vbByteSize );
+	ThrowIfFailed(D3DCreateBlob(vbByteSize, &geo->VertexBufferCPU));
+	CopyMemory(geo->VertexBufferCPU->GetBufferPointer(), vertices.data(), vbByteSize);
 
-	ThrowIfFailed( D3DCreateBlob( ibByteSize, &geo->IndexBufferCPU ) );
-	CopyMemory( geo->IndexBufferCPU->GetBufferPointer(), indices.data(), ibByteSize );
+	ThrowIfFailed(D3DCreateBlob(ibByteSize, &geo->IndexBufferCPU));
+	CopyMemory(geo->IndexBufferCPU->GetBufferPointer(), indices.data(), ibByteSize);
 
-	geo->VertexBufferGPU = d3dUtil::CreateDefaultBuffer( md3dDevice.Get(),
-														 mCommandList.Get(), vertices.data(), vbByteSize, geo->VertexBufferUploader );
+	geo->VertexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),
+														mCommandList.Get(), vertices.data(), vbByteSize, geo->VertexBufferUploader);
 
-	geo->IndexBufferGPU = d3dUtil::CreateDefaultBuffer( md3dDevice.Get(),
-														mCommandList.Get(), indices.data(), ibByteSize, geo->IndexBufferUploader );
+	geo->IndexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),
+													   mCommandList.Get(), indices.data(), ibByteSize, geo->IndexBufferUploader);
 
-	geo->VertexByteStride = sizeof( Vertex );
+	geo->VertexByteStride = sizeof(Vertex);
 	geo->VertexBufferByteSize = vbByteSize;
 	geo->IndexFormat = DXGI_FORMAT_R16_UINT;
 	geo->IndexBufferByteSize = ibByteSize;
 
 	geo->DrawArgs["box"] = boxSubmesh;
 
-	mGeometries[geo->Name] = std::move( geo );
+	mGeometries[geo->Name] = std::move(geo);
 }
 
 void CrateApp::BuildPSOs()
@@ -748,7 +763,7 @@ void CrateApp::BuildPSOs()
 	//
 	// PSO for opaque objects.
 	//
-	ZeroMemory( &opaquePsoDesc, sizeof( D3D12_GRAPHICS_PIPELINE_STATE_DESC ) );
+	ZeroMemory(&opaquePsoDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
 	opaquePsoDesc.InputLayout = {mInputLayout.data(), (UINT)mInputLayout.size()};
 	opaquePsoDesc.pRootSignature = mRootSignature.Get();
 	opaquePsoDesc.VS =
@@ -761,9 +776,9 @@ void CrateApp::BuildPSOs()
 		reinterpret_cast<BYTE*>(mShaders["opaquePS"]->GetBufferPointer()),
 		mShaders["opaquePS"]->GetBufferSize()
 	};
-	opaquePsoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC( D3D12_DEFAULT );
-	opaquePsoDesc.BlendState = CD3DX12_BLEND_DESC( D3D12_DEFAULT );
-	opaquePsoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC( D3D12_DEFAULT );
+	opaquePsoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	opaquePsoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+	opaquePsoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
 	opaquePsoDesc.SampleMask = UINT_MAX;
 	opaquePsoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 	opaquePsoDesc.NumRenderTargets = 1;
@@ -771,15 +786,15 @@ void CrateApp::BuildPSOs()
 	opaquePsoDesc.SampleDesc.Count = m4xMsaaState ? 4 : 1;
 	opaquePsoDesc.SampleDesc.Quality = m4xMsaaState ? (m4xMsaaQuality - 1) : 0;
 	opaquePsoDesc.DSVFormat = mDepthStencilFormat;
-	ThrowIfFailed( md3dDevice->CreateGraphicsPipelineState( &opaquePsoDesc, IID_PPV_ARGS( &mOpaquePSO ) ) );
+	ThrowIfFailed(md3dDevice->CreateGraphicsPipelineState(&opaquePsoDesc, IID_PPV_ARGS(&mOpaquePSO)));
 }
 
 void CrateApp::BuildFrameResources()
 {
-	for( int i = 0; i < gNumFrameResources; ++i )
+	for(int i = 0; i < gNumFrameResources; ++i)
 	{
-		mFrameResources.push_back( std::make_unique<FrameResource>( md3dDevice.Get(),
-																	1, (UINT)mAllRitems.size(), (UINT)mMaterials.size() ) );
+		mFrameResources.push_back(std::make_unique<FrameResource>(md3dDevice.Get(),
+																  1, (UINT)mAllRitems.size(), (UINT)mMaterials.size()));
 	}
 }
 
@@ -790,11 +805,11 @@ void CrateApp::BuildMaterials()
 		woodCrate->Name = "woodCrate";
 		woodCrate->MatCBIndex = 0;
 		woodCrate->DiffuseSrvHeapIndex = 1; // <- 이게 문제였음 ImGui 에서 할당을 한번 하니까 +1 해줘야 했음.
-		woodCrate->DiffuseAlbedo = XMFLOAT4( 1.0f, 1.0f, 1.0f, 1.0f );
-		woodCrate->FresnelR0 = XMFLOAT3( 0.05f, 0.05f, 0.05f );
+		woodCrate->DiffuseAlbedo = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+		woodCrate->FresnelR0 = XMFLOAT3(0.05f, 0.05f, 0.05f);
 		woodCrate->Roughness = 0.2f;
 
-		mMaterials["woodCrate"] = std::move( woodCrate );
+		mMaterials["woodCrate"] = std::move(woodCrate);
 	}
 
 	{
@@ -802,11 +817,11 @@ void CrateApp::BuildMaterials()
 		woodCrate->Name = "woodCrate2";
 		woodCrate->MatCBIndex = 0;
 		woodCrate->DiffuseSrvHeapIndex = 2;
-		woodCrate->DiffuseAlbedo = XMFLOAT4( 1.0f, 1.0f, 1.0f, 1.0f );
-		woodCrate->FresnelR0 = XMFLOAT3( 0.05f, 0.05f, 0.05f );
+		woodCrate->DiffuseAlbedo = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+		woodCrate->FresnelR0 = XMFLOAT3(0.05f, 0.05f, 0.05f);
 		woodCrate->Roughness = 0.2f;
 
-		mMaterials["woodCrate2"] = std::move( woodCrate );
+		mMaterials["woodCrate2"] = std::move(woodCrate);
 	}
 
 	{
@@ -814,11 +829,11 @@ void CrateApp::BuildMaterials()
 		woodCrate->Name = "woodCrate3";
 		woodCrate->MatCBIndex = 0;
 		woodCrate->DiffuseSrvHeapIndex = 3;
-		woodCrate->DiffuseAlbedo = XMFLOAT4( 1.0f, 1.0f, 1.0f, 1.0f );
-		woodCrate->FresnelR0 = XMFLOAT3( 0.05f, 0.05f, 0.05f );
+		woodCrate->DiffuseAlbedo = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+		woodCrate->FresnelR0 = XMFLOAT3(0.05f, 0.05f, 0.05f);
 		woodCrate->Roughness = 0.2f;
 
-		mMaterials["woodCrate3"] = std::move( woodCrate );
+		mMaterials["woodCrate3"] = std::move(woodCrate);
 	}
 
 }
@@ -834,7 +849,7 @@ void CrateApp::BuildRenderItems()
 		boxRitem->IndexCount = boxRitem->Geo->DrawArgs["box"].IndexCount / 3;
 		boxRitem->StartIndexLocation = boxRitem->Geo->DrawArgs["box"].StartIndexLocation;
 		boxRitem->BaseVertexLocation = boxRitem->Geo->DrawArgs["box"].BaseVertexLocation;
-		mAllRitems.push_back( std::move( boxRitem ) );
+		mAllRitems.push_back(std::move(boxRitem));
 	}
 
 	{
@@ -846,7 +861,7 @@ void CrateApp::BuildRenderItems()
 		boxRitem->IndexCount = boxRitem->Geo->DrawArgs["box"].IndexCount / 3;
 		boxRitem->StartIndexLocation = boxRitem->Geo->DrawArgs["box"].StartIndexLocation + (boxRitem->Geo->DrawArgs["box"].IndexCount / 3);
 		boxRitem->BaseVertexLocation = boxRitem->Geo->DrawArgs["box"].BaseVertexLocation;
-		mAllRitems.push_back( std::move( boxRitem ) );
+		mAllRitems.push_back(std::move(boxRitem));
 	}
 
 	{
@@ -858,78 +873,77 @@ void CrateApp::BuildRenderItems()
 		boxRitem->IndexCount = boxRitem->Geo->DrawArgs["box"].IndexCount / 3;
 		boxRitem->StartIndexLocation = boxRitem->Geo->DrawArgs["box"].StartIndexLocation + (boxRitem->Geo->DrawArgs["box"].IndexCount / 3) * 2;
 		boxRitem->BaseVertexLocation = boxRitem->Geo->DrawArgs["box"].BaseVertexLocation;
-		mAllRitems.push_back( std::move( boxRitem ) );
+		mAllRitems.push_back(std::move(boxRitem));
 	}
 
 	// All the render items are opaque.
-	for( auto& e : mAllRitems )
-		mOpaqueRitems.push_back( e.get() );
+	for(auto& e : mAllRitems)
+		mOpaqueRitems.push_back(e.get());
 }
 
-void CrateApp::DrawRenderItems( ID3D12GraphicsCommandList* cmdList, const std::vector<RenderItem*>& ritems )
+void CrateApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderItem*>& ritems)
 {
 	//Draw Gui
 	ImGui_ImplDX12_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
-	UINT objCBByteSize = d3dUtil::CalcConstantBufferByteSize( sizeof( ObjectConstants ) );
-	UINT matCBByteSize = d3dUtil::CalcConstantBufferByteSize( sizeof( MaterialConstants ) );
+	UINT objCBByteSize = d3dUtil::CalcConstantBufferByteSize(sizeof(ObjectConstants));
+	UINT matCBByteSize = d3dUtil::CalcConstantBufferByteSize(sizeof(MaterialConstants));
 
 	auto objectCB = mCurrFrameResource->ObjectCB->Resource();
 	auto matCB = mCurrFrameResource->MaterialCB->Resource();
 	// For each render item...
-	for( size_t i = 0; i < ritems.size(); ++i )
+	for(size_t i = 0; i < ritems.size(); ++i)
 	{
 		auto ri = ritems[i];
 
-		cmdList->IASetVertexBuffers( 0, 1, &ri->Geo->VertexBufferView() );
-		cmdList->IASetIndexBuffer( &ri->Geo->IndexBufferView() );
-		cmdList->IASetPrimitiveTopology( ri->PrimitiveType );
+		cmdList->IASetVertexBuffers(0, 1, &ri->Geo->VertexBufferView());
+		cmdList->IASetIndexBuffer(&ri->Geo->IndexBufferView());
+		cmdList->IASetPrimitiveTopology(ri->PrimitiveType);
 
-		CD3DX12_GPU_DESCRIPTOR_HANDLE tex( mSrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart() );
-		tex.Offset( ri->Mat->DiffuseSrvHeapIndex, mCbvSrvDescriptorSize );
+		CD3DX12_GPU_DESCRIPTOR_HANDLE tex(mSrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+		tex.Offset(ri->Mat->DiffuseSrvHeapIndex, mCbvSrvDescriptorSize);
 
 		D3D12_GPU_VIRTUAL_ADDRESS objCBAddress = objectCB->GetGPUVirtualAddress() + ri->ObjCBIndex*objCBByteSize;
 		D3D12_GPU_VIRTUAL_ADDRESS matCBAddress = matCB->GetGPUVirtualAddress() + ri->Mat->MatCBIndex*matCBByteSize;
 
-		cmdList->SetGraphicsRootDescriptorTable( 0, tex );
-		cmdList->SetGraphicsRootConstantBufferView( 1, objCBAddress );
-		cmdList->SetGraphicsRootConstantBufferView( 3, matCBAddress );
+		cmdList->SetGraphicsRootDescriptorTable(0, tex);
+		cmdList->SetGraphicsRootConstantBufferView(1, objCBAddress);
+		cmdList->SetGraphicsRootConstantBufferView(3, matCBAddress);
 
-		cmdList->DrawIndexedInstanced( ri->IndexCount, 1, ri->StartIndexLocation, ri->BaseVertexLocation, 0 );
+		cmdList->DrawIndexedInstanced(ri->IndexCount, 1, ri->StartIndexLocation, ri->BaseVertexLocation, 0);
 	}
-	static bool console_open;
-	static trigger::ui::console console(world);
-	if( ImGui::BeginMainMenuBar() )
+
+	if(ImGui::BeginMainMenuBar())
 	{
-		if( ImGui::BeginMenu( "Action" ) )
+		if(ImGui::BeginMenu("Action"))
 		{
-			if( ImGui::MenuItem( "Save" ) )
+			if(ImGui::MenuItem("Save"))
 			{
-				console.AddLog( "[log] Save this World");
+				console->AddLog("[log] Save this World");
 			}
-			if( ImGui::MenuItem( "Save As" ) )
+			if(ImGui::MenuItem("Save As"))
 			{
-				console.AddLog( "[log]  Save as ... ");
+				console->AddLog("[log]  Save as ... ");
 			}
-			if( ImGui::MenuItem( "Load" ) )
+			if(ImGui::MenuItem("Load"))
 			{
-				console.AddLog( "[log] Load World");
+				console->AddLog("[log] Load World");
 			}
 			ImGui::Separator();
-			if( ImGui::MenuItem( "Exit" ) )
+			if(ImGui::MenuItem("Exit"))
 			{
-				console.AddLog( "[log] Bye Bye");
-				exit( 0 );
+				console->AddLog("[log] Bye Bye");
+				exit(0);
 			}
 			ImGui::EndMenu();
 		}
-		if( ImGui::BeginMenu( "Window" ) )
+		if(ImGui::BeginMenu("Window"))
 		{
-			if( ImGui::MenuItem( "Console" ) )
+			if(ImGui::MenuItem("Console"))
 			{
-				if( console_open )
+				if(console_open)
 				{
 					console_open = false;
 				}
@@ -940,76 +954,84 @@ void CrateApp::DrawRenderItems( ID3D12GraphicsCommandList* cmdList, const std::v
 			}
 			ImGui::EndMenu();
 		}
-		if( ImGui::BeginMenu( "Game" ) )
+		if(ImGui::BeginMenu("Game"))
 		{
-			if( ImGui::MenuItem( "Creat new Actor" ) )
+			if(ImGui::MenuItem("Creat new Actor"))
 			{
-				world->add( new trigger::actor() );
-				console.AddLog( "[log] new Actor spawn in World.");
+				auto t = new trigger::actor();
+				t->name = "actor" + to_string(world->get_components<trigger::actor>().size());
+				world->add(t);
+				console->AddLog("[log] new Actor spawn in World.");
 			}
 			ImGui::EndMenu();
 		}
 		ImGui::EndMainMenuBar();
 	}
 
-	if( console_open )
+	if(console_open)
 	{
-		console.Draw( "Trigger Console", &console_open );
+		console->Draw("Trigger Console", &console_open);
 	}
-	
-	int count_ = 0;
-	for( auto i : world->get_components<trigger::actor>() )
+
+	ImGui::Begin("World");
+	for(auto i : world->get_components<trigger::actor>())
 	{
-		std::string t("Controller : " + to_string(count_));
-		if( ImGui::Begin(t.c_str() ) )
+		if(ImGui::Selectable(i->name.c_str()))
 		{
-			if( ImGui::BeginMenu( "Actions", "some Action for this Object" ) )
+			target = i;
+		}
+	}
+	ImGui::End();
+
+	if(target != nullptr)
+	{
+		if(ImGui::Begin("Controller"))
+		{
+			if(ImGui::BeginMenu("Actions", "some Action for this Object"))
 			{
-				if( ImGui::MenuItem( "delete" ) )
+				if(ImGui::MenuItem("delete"))
 				{
-					if( world->delete_component( i ) )
+					if(world->delete_component(target))
 					{
-						console.AddLog( "[log] %s is Deleted in World!", i->name.c_str() );
+						console->AddLog("[log] %s is Deleted in World!", target->name.c_str());
 					}
 					else
 					{
-						console.AddLog( "[error] %s , cant Find in World!", i->name.c_str() );
+						console->AddLog("[error] %s , cant Find in World!", target->name.c_str());
 					}
 				}
 				ImGui::EndMenu();
 			}
 			ImGui::Separator();
-			
-			if( ImGui::Checkbox("", &i->active ) )
+
+			if(ImGui::Checkbox("", &target->active))
 			{
-				
+
 			}
 			ImGui::SameLine();
-			ImGui::InputText( "Name", &i->name );
+			ImGui::InputText("Name", &target->name);
 
-			static float *input_pos = new float[3];
-			ImGui::InputFloat3( "position ", input_pos, -10, 10 );
-			i->position.x = input_pos[0];
-			i->position.y = input_pos[1];
-			i->position.z = input_pos[2];
+			ImGui::InputFloat3("position ", pos, -10, 10);
+			target->position.x = pos[0];
+			target->position.y = pos[1];
+			target->position.z = pos[2];
 			ImGui::Separator();
 
-			ImGui::InputFloat( "X", &i->rotation.x );
-			ImGui::InputFloat( "Y", &i->rotation.y );
-			ImGui::InputFloat( "Z", &i->rotation.z );
+			ImGui::InputFloat("X", &target->rotation.x);
+			ImGui::InputFloat("Y", &target->rotation.y);
+			ImGui::InputFloat("Z", &target->rotation.z);
 			ImGui::Separator();
-			ImGui::InputFloat( "W", &i->scale.x );
-			ImGui::InputFloat( "H", &i->scale.y );
-			ImGui::InputFloat( "D", &i->scale.z );
+			ImGui::InputFloat("W", &target->scale.x);
+			ImGui::InputFloat("H", &target->scale.y);
+			ImGui::InputFloat("D", &target->scale.z);
 			ImGui::Separator();
 
-			++count_;
 		}
 		ImGui::End();
 	}
 
 	ImGui::Render();
-	ImGui_ImplDX12_RenderDrawData( ImGui::GetDrawData(), cmdList );
+	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), cmdList);
 }
 
 std::array<const CD3DX12_STATIC_SAMPLER_DESC, 6> CrateApp::GetStaticSamplers()
@@ -1022,28 +1044,28 @@ std::array<const CD3DX12_STATIC_SAMPLER_DESC, 6> CrateApp::GetStaticSamplers()
 		D3D12_FILTER_MIN_MAG_MIP_POINT, // filter
 		D3D12_TEXTURE_ADDRESS_MODE_WRAP,  // addressU
 		D3D12_TEXTURE_ADDRESS_MODE_WRAP,  // addressV
-		D3D12_TEXTURE_ADDRESS_MODE_WRAP ); // addressW
+		D3D12_TEXTURE_ADDRESS_MODE_WRAP); // addressW
 
 	const CD3DX12_STATIC_SAMPLER_DESC pointClamp(
 		1, // shaderRegister
 		D3D12_FILTER_MIN_MAG_MIP_POINT, // filter
 		D3D12_TEXTURE_ADDRESS_MODE_CLAMP,  // addressU
 		D3D12_TEXTURE_ADDRESS_MODE_CLAMP,  // addressV
-		D3D12_TEXTURE_ADDRESS_MODE_CLAMP ); // addressW
+		D3D12_TEXTURE_ADDRESS_MODE_CLAMP); // addressW
 
 	const CD3DX12_STATIC_SAMPLER_DESC linearWrap(
 		2, // shaderRegister
 		D3D12_FILTER_MIN_MAG_MIP_LINEAR, // filter
 		D3D12_TEXTURE_ADDRESS_MODE_WRAP,  // addressU
 		D3D12_TEXTURE_ADDRESS_MODE_WRAP,  // addressV
-		D3D12_TEXTURE_ADDRESS_MODE_WRAP ); // addressW
+		D3D12_TEXTURE_ADDRESS_MODE_WRAP); // addressW
 
 	const CD3DX12_STATIC_SAMPLER_DESC linearClamp(
 		3, // shaderRegister
 		D3D12_FILTER_MIN_MAG_MIP_LINEAR, // filter
 		D3D12_TEXTURE_ADDRESS_MODE_CLAMP,  // addressU
 		D3D12_TEXTURE_ADDRESS_MODE_CLAMP,  // addressV
-		D3D12_TEXTURE_ADDRESS_MODE_CLAMP ); // addressW
+		D3D12_TEXTURE_ADDRESS_MODE_CLAMP); // addressW
 
 	const CD3DX12_STATIC_SAMPLER_DESC anisotropicWrap(
 		4, // shaderRegister
@@ -1052,7 +1074,7 @@ std::array<const CD3DX12_STATIC_SAMPLER_DESC, 6> CrateApp::GetStaticSamplers()
 		D3D12_TEXTURE_ADDRESS_MODE_WRAP,  // addressV
 		D3D12_TEXTURE_ADDRESS_MODE_WRAP,  // addressW
 		0.0f,                             // mipLODBias
-		8 );                               // maxAnisotropy
+		8);                               // maxAnisotropy
 
 	const CD3DX12_STATIC_SAMPLER_DESC anisotropicClamp(
 		5, // shaderRegister
@@ -1061,7 +1083,7 @@ std::array<const CD3DX12_STATIC_SAMPLER_DESC, 6> CrateApp::GetStaticSamplers()
 		D3D12_TEXTURE_ADDRESS_MODE_CLAMP,  // addressV
 		D3D12_TEXTURE_ADDRESS_MODE_CLAMP,  // addressW
 		0.0f,                              // mipLODBias
-		8 );                                // maxAnisotropy
+		8);                                // maxAnisotropy
 
 	return {
 		pointWrap, pointClamp,

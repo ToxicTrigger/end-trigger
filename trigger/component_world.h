@@ -28,15 +28,15 @@ namespace trigger
 
 	public:
 		//Build a new World
-		explicit inline component_world( bool UseThread )
+		explicit inline component_world(bool UseThread)
 		{
 			components = list<component*>();
 			start_time = time::now();
 
 			use_thread = UseThread;
-			if( UseThread )
+			if(UseThread)
 			{
-				main_thread = thread( &component_world::update, this, delta_time.count() );
+				main_thread = thread(&component_world::update, this, delta_time.count());
 			}
 		}
 
@@ -48,10 +48,10 @@ namespace trigger
 		template<typename T>
 		inline constexpr T* get() const
 		{
-			for( auto i : components )
+			for(auto i : components)
 			{
 				auto t = dynamic_cast<T*>(i);
-				if( t != nullptr )
+				if(t != nullptr)
 				{
 					return t;
 				}
@@ -68,32 +68,32 @@ namespace trigger
 		inline constexpr list<T*> get_components()
 		{
 			list<T*> tmp = list<T*>();
-			for( auto i : components )
+			for(auto i : components)
 			{
 				auto t = dynamic_cast<T*>(i);
-				if( t != nullptr )
+				if(t != nullptr)
 				{
-					tmp.push_back( t );
+					tmp.push_back(t);
 				}
 			}
 			return tmp;
 		};
 
-		inline component* get( unsigned int index ) noexcept
+		inline component* get(unsigned int index) noexcept
 		{
-			if( index >= components.size() ) return nullptr;
+			if(index >= components.size()) return nullptr;
 
 			auto i = components.begin();
-			std::advance( i, index );
+			std::advance(i, index);
 			return *i;
 		}
-		
-		inline constexpr bool delete_component( component *target ) noexcept
+
+		inline constexpr bool delete_component(component *target) noexcept
 		{
-			if( target != nullptr && components.size() != 0)
+			if(target != nullptr && components.size() != 0)
 			{
 				lock.lock();
-				components.remove( target );
+				components.remove(target);
 				lock.unlock();
 				return true;
 			}
@@ -101,36 +101,36 @@ namespace trigger
 		}
 
 		//add component in world-component-list
-		inline constexpr void add( component * com ) noexcept
+		inline constexpr void add(component * com) noexcept
 		{
-			if( com != nullptr ) components.push_back( com );
+			if(com != nullptr) components.push_back(com);
 		}
 
 		inline void clean_component() noexcept
 		{
-			if( components.size() != 0 )
+			if(components.size() != 0)
 			{
 				auto delete_list = std::list<component*>();
-				for( auto i : components )
+				for(auto i : components)
 				{
-					if( !i->active ) delete_list.push_back( i );
+					if(!i->active) delete_list.push_back(i);
 				}
 
-				for( auto i : delete_list )
+				for(auto i : delete_list)
 				{
-					components.remove( i );
+					components.remove(i);
 				}
 			}
 		}
 
 		//simulating world
-		inline void update( float delta ) noexcept
+		inline void update(float delta) noexcept
 		{
-			while( use_thread )
+			while(use_thread)
 			{
-				if( components.size() != 0 )
+				if(components.size() != 0)
 				{
-					while( this->active && use_thread )
+					while(this->active)
 					{
 						update_all();
 					}
@@ -140,18 +140,18 @@ namespace trigger
 
 		void update_all()
 		{
-			if( components.size() != 0 )
+			if(components.size() != 0)
 			{
 				run_time = chrono::duration_cast<chrono::duration<float>>(time::now() - start_time);
 				auto t = time::now();
 				lock.lock();
-				for( auto i : components )
+				for(auto i : components)
 				{
-					if( i != nullptr )
+					if(i != nullptr)
 					{
-						if( i->active )
+						if(i->active)
 						{
-							i->update( this->delta_time.count() * time_scale * i->time_scale );
+							i->update(this->delta_time.count() * time_scale * i->time_scale);
 						}
 					}
 				}

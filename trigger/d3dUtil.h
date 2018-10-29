@@ -39,6 +39,7 @@
 #include "component_world.h"
 #include "actor.h"
 #include "trigger_console.h"
+#include "Camera.h"
 
 extern const int gNumFrameResources;
 

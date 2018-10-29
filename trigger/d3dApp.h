@@ -94,7 +94,7 @@ protected:
     bool      mFullscreenState = false;// fullscreen enabled
 
 	// Set true to use 4X MSAA (?.1.8).  The default is false.
-    bool      m4xMsaaState = false;    // 4X MSAA enabled
+	bool      m4xMsaaState = false;    // 4X MSAA enabled
     UINT      m4xMsaaQuality = 0;      // quality level of 4X MSAA
 
 	GameTimer mTimer;
