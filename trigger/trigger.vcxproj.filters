@@ -28,6 +28,9 @@
     <Filter Include="헤더 파일\game">
       <UniqueIdentifier>{764d738c-68e4-45ea-841d-1ef341b6eac6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="헤더 파일\tools">
+      <UniqueIdentifier>{4e0cb2c6-3d2a-4286-a5d1-7676cbdb2f83}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
@@ -109,6 +112,12 @@
     <ClInclude Include="Camera.h">
       <Filter>헤더 파일\dx12</Filter>
     </ClInclude>
+    <ClInclude Include="dirent.h">
+      <Filter>헤더 파일\tools</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGuiFileDialog.h">
+      <Filter>헤더 파일\tools</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="imgui.cpp">
@@ -158,6 +167,9 @@
     </ClCompile>
     <ClCompile Include="Camera.cpp">
       <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGuiFileDialog.cpp">
+      <Filter>헤더 파일\tools</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

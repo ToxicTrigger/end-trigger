@@ -14,9 +14,9 @@ namespace trigger
 		{
 			const std::string name;
 		public:
-			explicit inline state( const std::string name = "Unknown" ) noexcept : name(name)
+			explicit inline state(const std::string name = "Unknown") noexcept : name(name)
 			{
-				
+
 			}
 
 			inline const std::string& get_name() const noexcept
@@ -27,7 +27,7 @@ namespace trigger
 			{};
 			virtual void end_state()
 			{};
-			virtual void update( const float delta )
+			virtual void update(const float delta)
 			{};
 		};
 
@@ -46,7 +46,7 @@ namespace trigger
 				ops = 1;
 			}
 
-			explicit inline link( const state *current, const state *next ) : link()
+			explicit inline link(const state *current, const state *next) : link()
 			{
 				this->cur._Myptr() = const_cast<state*>(current);
 				this->next._Myptr() = const_cast<state*>(next);
@@ -64,7 +64,7 @@ namespace trigger
 			{
 				return this->ops;
 			};
-			inline constexpr void set_ops( int op ) noexcept
+			inline constexpr void set_ops(int op) noexcept
 			{
 				ops = op;
 			};
@@ -78,18 +78,18 @@ namespace trigger
 			std::list<link*> links;
 			std::string cur_name, now_name;
 
-			inline void simulate( float delta ) noexcept
+			inline void simulate(float delta) noexcept
 			{
-				now_state->update( delta );
-				for( auto i : this->links )
+				now_state->update(delta);
+				for(auto i : this->links)
 				{
 					cur_name = i->get_current_state()->get_name();
-					if( cur_name == now_name )
+					if(cur_name == now_name)
 					{
 						// ops == 0 , move now_state between link
-						if( i->get_ops() == 0 )
+						if(i->get_ops() == 0)
 						{
-							i->set_ops( i->get_ops() + 1 );
+							i->set_ops(i->get_ops() + 1);
 							now_state->end_state();
 							now_state._Myptr() = const_cast<state*>(i->get_next_state());
 							now_state->begin_state();
@@ -106,27 +106,27 @@ namespace trigger
 				states = std::list<state*>();
 				links = std::list<link*>();
 
-				auto idle = new state( "idle" );
-				add_state( idle );
-				now_state = std::make_unique<state>( idle->get_name() );
+				auto idle = new state("idle");
+				add_state(idle);
+				now_state = std::make_unique<state>(idle->get_name());
 				now_name = now_state->get_name();
 			}
 
-			inline explicit map( state *def_state ) : map()
+			inline explicit map(state *def_state) : map()
 			{
 				// inited state idle
-				add_state( def_state );
-				link *def = new link( now_state.get(), def_state );
-				def->set_ops( 0 );
-				links.push_back( def );
+				add_state(def_state);
+				link *def = new link(now_state.get(), def_state);
+				def->set_ops(0);
+				links.push_back(def);
 				now_name = now_state->get_name();
 			}
 
-			inline const state* const get_state( const std::string name ) const noexcept
+			inline const state* const get_state(const std::string name) const noexcept
 			{
-				for( auto i : states )
+				for(auto i : states)
 				{
-					if( i->get_name() == name )
+					if(i->get_name() == name)
 					{
 						return i;
 					}
@@ -134,25 +134,25 @@ namespace trigger
 				return nullptr;
 			}
 
-			inline const state* const get_state( const state *state ) const noexcept
+			inline const state* const get_state(const state *state) const noexcept
 			{
-				for( auto i : states )
+				for(auto i : states)
 				{
-					if( i == state ) return i;
+					if(i == state) return i;
 				}
 				return nullptr;
 			}
 
-			inline bool link_state( const std::string state1, const std::string state2 ) noexcept
+			inline bool link_state(const std::string state1, const std::string state2) noexcept
 			{
-				const state *a = get_state( state1 );
-				if( a != nullptr )
+				const state *a = get_state(state1);
+				if(a != nullptr)
 				{
-					const state *b = get_state( state2 );
-					if( b != nullptr )
+					const state *b = get_state(state2);
+					if(b != nullptr)
 					{
-						link *tmp = new link( a, b );
-						this->links.push_back( tmp );
+						link *tmp = new link(a, b);
+						this->links.push_back(tmp);
 						return true;
 					}
 				}
@@ -164,51 +164,51 @@ namespace trigger
 				return *now_state;
 			}
 
-			inline constexpr void add_state( state *new_state ) noexcept
+			inline constexpr void add_state(state *new_state) noexcept
 			{
-				if( new_state != nullptr )
+				if(new_state != nullptr)
 				{
-					states.push_back( new_state );
+					states.push_back(new_state);
 				}
 			}
 
-			inline const void add_state( const std::string state_name ) noexcept
+			inline const void add_state(const std::string state_name) noexcept
 			{
-				if( get_state( state_name ) != nullptr )
+				if(get_state(state_name) != nullptr)
 				{
-					state *tmp = new state( state_name );
-					states.push_back( tmp );
+					state *tmp = new state(state_name);
+					states.push_back(tmp);
 				}
 			}
 
-			inline bool delete_state( state * state ) noexcept
+			inline bool delete_state(state * state) noexcept
 			{
-				if( state != nullptr )
+				if(state != nullptr)
 				{
-					states.remove( state );
+					states.remove(state);
 					return true;
 				}
 				return false;
 			}
 
-			inline bool delete_state( std::string name ) noexcept
+			inline bool delete_state(std::string name) noexcept
 			{
-				if( delete_state( const_cast<state*>(get_state( name )) ) )
+				if(delete_state(const_cast<state*>(get_state(name))))
 				{
 					return true;
 				}
 				return false;
 			}
 
-			inline const link* const get_link( std::string state1, std::string state2 ) const noexcept
+			inline const link* const get_link(std::string state1, std::string state2) const noexcept
 			{
-				const state *tmp = get_state( state1 );
-				const state *tmp2 = get_state( state2 );
-				if( tmp != nullptr && tmp2 != nullptr )
+				const state *tmp = get_state(state1);
+				const state *tmp2 = get_state(state2);
+				if(tmp != nullptr && tmp2 != nullptr)
 				{
-					for( auto i : links )
+					for(auto i : links)
 					{
-						if( i->get_current_state()->get_name() == tmp->get_name() && i->get_current_state()->get_name() == tmp2->get_name() )
+						if(i->get_current_state()->get_name() == tmp->get_name() && i->get_current_state()->get_name() == tmp2->get_name())
 						{
 							return i;
 						}
@@ -217,29 +217,29 @@ namespace trigger
 				return nullptr;
 			}
 
-			inline bool delete_link( std::string state1, std::string state2 ) noexcept
+			inline bool delete_link(std::string state1, std::string state2) noexcept
 			{
-				auto t = get_link( state1, state2 );
-				if( t != nullptr )
+				auto t = get_link(state1, state2);
+				if(t != nullptr)
 				{
-					links.remove( const_cast<link*>(t) );
+					links.remove(const_cast<link*>(t));
 					return true;
 				}
 				return false;
 			}
 
-			inline bool change_link( std::string state1, std::string state2, unsigned int op ) const noexcept
+			inline bool change_link(std::string state1, std::string state2, unsigned int op) const noexcept
 			{
-				const state *tmp = get_state( state1 );
-				const state *tmp2 = get_state( state2 );
-				if( tmp != nullptr && tmp2 != nullptr )
+				const state *tmp = get_state(state1);
+				const state *tmp2 = get_state(state2);
+				if(tmp != nullptr && tmp2 != nullptr)
 				{
-					for( auto i : links )
+					for(auto i : links)
 					{
-						if( i->get_current_state()->get_name() == tmp->get_name()
-							&& i->get_next_state()->get_name() == tmp2->get_name() )
+						if(i->get_current_state()->get_name() == tmp->get_name()
+						   && i->get_next_state()->get_name() == tmp2->get_name())
 						{
-							i->set_ops( 0 );
+							i->set_ops(0);
 						}
 					}
 					return true;
@@ -247,14 +247,14 @@ namespace trigger
 				return false;
 			}
 
-			inline void update( float delta ) noexcept
+			inline void update(float delta) noexcept
 			{
-				simulate( delta );
+				simulate(delta);
 			}
 
 			~map()
 			{
-				if( now_state != nullptr )
+				if(now_state != nullptr)
 				{
 					now_state.release();
 				}

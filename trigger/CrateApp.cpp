@@ -119,7 +119,7 @@ private:
 
 	PassConstants mMainPassCB;
 
-	XMFLOAT3 mEyePos = {0.0f, 0.0f, 0.0f};
+	XMFLOAT3 mEyePos = { 0.0f, 0.0f, 0.0f };
 	XMFLOAT4X4 mView = MathHelper::Identity4x4();
 	XMFLOAT4X4 mProj = MathHelper::Identity4x4();
 	XMFLOAT3 direction;
@@ -145,7 +145,7 @@ private:
 };
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance,
-				   PSTR cmdLine, int showCmd)
+	PSTR cmdLine, int showCmd)
 {
 	// Enable run-time memory check for debug builds.
 #if defined(DEBUG) | defined(_DEBUG)
@@ -155,12 +155,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance,
 	try
 	{
 		CrateApp theApp(hInstance);
-		if(!theApp.Initialize())
+		if (!theApp.Initialize())
 			return 0;
 
 		return theApp.Run();
 	}
-	catch(DxException& e)
+	catch (DxException& e)
 	{
 		MessageBox(nullptr, e.ToString().c_str(), L"HR Failed", MB_OK);
 		return 0;
@@ -173,13 +173,13 @@ CrateApp::CrateApp(HINSTANCE hInstance)
 
 CrateApp::~CrateApp()
 {
-	if(md3dDevice != nullptr)
+	if (md3dDevice != nullptr)
 		FlushCommandQueue();
 }
 
 bool CrateApp::Initialize()
 {
-	if(!D3DApp::Initialize())
+	if (!D3DApp::Initialize())
 		return false;
 
 	// Reset the command list to prep for initialization commands.
@@ -206,9 +206,10 @@ bool CrateApp::Initialize()
 	scale[2] = 0;
 	cam.SetOrthographic(false);
 	target = new trigger::actor();
-	console = new trigger::ui::console(world);
+	console = new trigger::ui::console(selected_world);
 	//mEyePos = XMFLOAT3(1, 1, 1);
 	cam.SetLens(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, 1000.0f);
+
 
 	LoadTextures();
 	BuildRootSignature();
@@ -222,7 +223,7 @@ bool CrateApp::Initialize()
 
 	// Execute the initialization commands.
 	ThrowIfFailed(mCommandList->Close());
-	ID3D12CommandList* cmdsLists[] = {mCommandList.Get()};
+	ID3D12CommandList* cmdsLists[] = { mCommandList.Get() };
 	mCommandQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
 
 	// Wait until initialization is complete.
@@ -253,7 +254,7 @@ void CrateApp::Update(const GameTimer& gt)
 
 	// Has the GPU finished processing the commands of the current frame resource?
 	// If not, wait until the GPU has completed commands up to this fence point.
-	if(mCurrFrameResource->Fence != 0 && mFence->GetCompletedValue() < mCurrFrameResource->Fence)
+	if (mCurrFrameResource->Fence != 0 && mFence->GetCompletedValue() < mCurrFrameResource->Fence)
 	{
 		HANDLE eventHandle = CreateEventEx(nullptr, false, false, EVENT_ALL_ACCESS);
 		ThrowIfFailed(mFence->SetEventOnCompletion(mCurrFrameResource->Fence, eventHandle));
@@ -285,7 +286,7 @@ void CrateApp::Draw(const GameTimer& gt)
 
 	// Indicate a state transition on the resource usage.
 	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
-																		   D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
+		D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
 
 	// Clear the back buffer and depth buffer.
 	mCommandList->ClearRenderTargetView(CurrentBackBufferView(), Colors::LightSteelBlue, 0, nullptr);
@@ -294,7 +295,7 @@ void CrateApp::Draw(const GameTimer& gt)
 	// Specify the buffers we are going to render to.
 	mCommandList->OMSetRenderTargets(1, &CurrentBackBufferView(), true, &DepthStencilView());
 
-	ID3D12DescriptorHeap* descriptorHeaps[] = {mSrvDescriptorHeap.Get()};
+	ID3D12DescriptorHeap* descriptorHeaps[] = { mSrvDescriptorHeap.Get() };
 	mCommandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
 
 	mCommandList->SetGraphicsRootSignature(mRootSignature.Get());
@@ -306,13 +307,13 @@ void CrateApp::Draw(const GameTimer& gt)
 
 	// Indicate a state transition on the resource usage.
 	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
-																		   D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
+		D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
 
 	// Done recording commands.
 	ThrowIfFailed(mCommandList->Close());
 
 	// Add the command list to the queue for execution.
-	ID3D12CommandList* cmdsLists[] = {mCommandList.Get()};
+	ID3D12CommandList* cmdsLists[] = { mCommandList.Get() };
 	mCommandQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
 
 	// Swap the back and front buffers
@@ -330,7 +331,7 @@ void CrateApp::Draw(const GameTimer& gt)
 
 void CrateApp::OnMouseDown(WPARAM btnState, int x, int y)
 {
-	if(btnState & MK_LBUTTON)
+	if (btnState & MK_LBUTTON)
 	{
 		//ray
 		XMVECTOR mouseNear = XMVectorSet((float)mLastMousePos.x, (float)mLastMousePos.y, 0.0f, 0.0f);
@@ -339,12 +340,12 @@ void CrateApp::OnMouseDown(WPARAM btnState, int x, int y)
 		XMMATRIX view = XMLoadFloat4x4(&mMainPassCB.View);
 
 		XMVECTOR unprojected_near = XMVector3Unproject(mouseNear, 0, 0, mScreenViewport.Width, mScreenViewport.Height,
-													   mMainPassCB.NearZ, mMainPassCB.FarZ,
-													   pro, view, XMMatrixIdentity());
+			mMainPassCB.NearZ, mMainPassCB.FarZ,
+			pro, view, XMMatrixIdentity());
 
 		XMVECTOR unprojected_far = XMVector3Unproject(mouseFar, 0, 0, mScreenViewport.Width, mScreenViewport.Height,
-													  mMainPassCB.NearZ, mMainPassCB.FarZ,
-													  pro, view, XMMatrixIdentity());
+			mMainPassCB.NearZ, mMainPassCB.FarZ,
+			pro, view, XMMatrixIdentity());
 		XMVECTOR result = DirectX::XMVector3Normalize(DirectX::XMVectorSubtract(unprojected_far, unprojected_near));
 
 		XMStoreFloat3(&direction, result);
@@ -364,7 +365,7 @@ void CrateApp::OnMouseUp(WPARAM btnState, int x, int y)
 
 void CrateApp::OnMouseMove(WPARAM btnState, int x, int y)
 {
-	if((btnState & MK_RBUTTON) != 0)
+	if ((btnState & MK_RBUTTON) != 0)
 	{
 		// Make each pixel correspond to a quarter of a degree.
 		float dx = XMConvertToRadians(0.25f*static_cast<float>(x - mLastMousePos.x));
@@ -388,12 +389,12 @@ void CrateApp::OnMouseMove(WPARAM btnState, int x, int y)
 
 void CrateApp::OnKeyboardInputUp(WPARAM btnState)
 {
-	if(btnState == 87 || btnState == 0x53)
+	if (btnState == 87 || btnState == 0x53)
 	{
 		v = 0;
-		
+
 	}
-	if(btnState == 0x41 || btnState == 0x44)
+	if (btnState == 0x41 || btnState == 0x44)
 	{
 		h = 0;
 	}
@@ -401,26 +402,26 @@ void CrateApp::OnKeyboardInputUp(WPARAM btnState)
 
 void CrateApp::OnKeyboardInput(WPARAM btnState)
 {
-	if(btnState == 87 || btnState == 0x53)
+	if (btnState == 87 || btnState == 0x53)
 	{
-		if(btnState == 87)
+		if (btnState == 87)
 		{
 			v = 1;
 		}
-		else if(btnState == 0x53)
+		else if (btnState == 0x53)
 		{
 			v = -1;
 		}
 	}
 
 
-	if(btnState == 0x41 || btnState == 0x44)
+	if (btnState == 0x41 || btnState == 0x44)
 	{
-		if(btnState == 0x41)
+		if (btnState == 0x41)
 		{
 			h = 1;
 		}
-		if(btnState == 0x44)
+		if (btnState == 0x44)
 		{
 			h = -1;
 		}
@@ -429,20 +430,20 @@ void CrateApp::OnKeyboardInput(WPARAM btnState)
 
 void CrateApp::UpdateCamera(const GameTimer& gt)
 {
-	if(GetAsyncKeyState('W') & 0x8000)
+	if (GetAsyncKeyState('W') & 0x8000)
 	{
 		cam.Walk(1.0f * gt.DeltaTime());
 	}
 
-	if(GetAsyncKeyState('S') & 0x8000)
+	if (GetAsyncKeyState('S') & 0x8000)
 	{
 		cam.Walk(-1.0f * gt.DeltaTime());
 	}
-	if(GetAsyncKeyState('A') & 0x8000)
+	if (GetAsyncKeyState('A') & 0x8000)
 	{
 		cam.Strafe(-1.0f * gt.DeltaTime());
 	}
-	if(GetAsyncKeyState('D') & 0x8000)
+	if (GetAsyncKeyState('D') & 0x8000)
 	{
 		cam.Strafe(1.0f * gt.DeltaTime());
 	}
@@ -477,11 +478,11 @@ void CrateApp::AnimateMaterials(const GameTimer& gt)
 void CrateApp::UpdateObjectCBs(const GameTimer& gt)
 {
 	auto currObjectCB = mCurrFrameResource->ObjectCB.get();
-	for(auto& e : mAllRitems)
+	for (auto& e : mAllRitems)
 	{
 		// Only update the cbuffer data if the constants have changed.  
 		// This needs to be tracked per frame resource.
-		if(e->NumFramesDirty > 0)
+		if (e->NumFramesDirty > 0)
 		{
 			XMMATRIX world = XMLoadFloat4x4(&e->World);
 			XMMATRIX texTransform = XMLoadFloat4x4(&e->TexTransform);
@@ -507,12 +508,12 @@ void CrateApp::UpdateObjectCBs(const GameTimer& gt)
 void CrateApp::UpdateMaterialCBs(const GameTimer& gt)
 {
 	auto currMaterialCB = mCurrFrameResource->MaterialCB.get();
-	for(auto& e : mMaterials)
+	for (auto& e : mMaterials)
 	{
 		// Only update the cbuffer data if the constants have changed.  If the cbuffer
 		// data changes, it needs to be updated for each FrameResource.
 		Material* mat = e.second.get();
-		if(mat->NumFramesDirty > 0)
+		if (mat->NumFramesDirty > 0)
 		{
 			XMMATRIX matTransform = XMLoadFloat4x4(&mat->MatTransform);
 
@@ -553,13 +554,13 @@ void CrateApp::UpdateMainPassCB(const GameTimer& gt)
 	mMainPassCB.FarZ = 1000.0f;
 	mMainPassCB.TotalTime = gt.TotalTime();
 	mMainPassCB.DeltaTime = gt.DeltaTime();
-	mMainPassCB.AmbientLight = {0.25f, 0.25f, 0.35f, 1.0f};
-	mMainPassCB.Lights[0].Direction = {0.57735f, -0.57735f, 0.57735f};
-	mMainPassCB.Lights[0].Strength = {0.6f, 0.6f, 0.6f};
-	mMainPassCB.Lights[1].Direction = {-0.57735f, -0.57735f, 0.57735f};
-	mMainPassCB.Lights[1].Strength = {0.3f, 0.3f, 0.3f};
-	mMainPassCB.Lights[2].Direction = {0.0f, -0.707f, -0.707f};
-	mMainPassCB.Lights[2].Strength = {0.15f, 0.15f, 0.15f};
+	mMainPassCB.AmbientLight = { 0.25f, 0.25f, 0.35f, 1.0f };
+	mMainPassCB.Lights[0].Direction = { 0.57735f, -0.57735f, 0.57735f };
+	mMainPassCB.Lights[0].Strength = { 0.6f, 0.6f, 0.6f };
+	mMainPassCB.Lights[1].Direction = { -0.57735f, -0.57735f, 0.57735f };
+	mMainPassCB.Lights[1].Strength = { 0.3f, 0.3f, 0.3f };
+	mMainPassCB.Lights[2].Direction = { 0.0f, -0.707f, -0.707f };
+	mMainPassCB.Lights[2].Strength = { 0.15f, 0.15f, 0.15f };
 
 	auto currPassCB = mCurrFrameResource->PassCB.get();
 	currPassCB->CopyData(0, mMainPassCB);
@@ -571,22 +572,22 @@ void CrateApp::LoadTextures()
 	woodCrateTex->Name = "woodCrateTex";
 	woodCrateTex->Filename = L"../tools/ui_heart_dot.DDS";
 	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(md3dDevice.Get(),
-													  mCommandList.Get(), woodCrateTex->Filename.c_str(),
-													  woodCrateTex->Resource, woodCrateTex->UploadHeap));
+		mCommandList.Get(), woodCrateTex->Filename.c_str(),
+		woodCrateTex->Resource, woodCrateTex->UploadHeap));
 
 	auto woodCrateTex1 = std::make_unique<Texture>();
 	woodCrateTex1->Name = "woodCrateTex1";
 	woodCrateTex1->Filename = L"../tools/ui_heart_dot.DDS";
 	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(md3dDevice.Get(),
-													  mCommandList.Get(), woodCrateTex1->Filename.c_str(),
-													  woodCrateTex1->Resource, woodCrateTex1->UploadHeap));
+		mCommandList.Get(), woodCrateTex1->Filename.c_str(),
+		woodCrateTex1->Resource, woodCrateTex1->UploadHeap));
 
 	auto woodCrateTex2 = std::make_unique<Texture>();
 	woodCrateTex2->Name = "woodCrateTex2";
 	woodCrateTex2->Filename = L"../tools/ui_heart_dot.DDS";
 	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(md3dDevice.Get(),
-													  mCommandList.Get(), woodCrateTex2->Filename.c_str(),
-													  woodCrateTex2->Resource, woodCrateTex2->UploadHeap));
+		mCommandList.Get(), woodCrateTex2->Filename.c_str(),
+		woodCrateTex2->Resource, woodCrateTex2->UploadHeap));
 
 	mTextures[woodCrateTex->Name] = std::move(woodCrateTex);
 	mTextures[woodCrateTex1->Name] = std::move(woodCrateTex1);
@@ -612,15 +613,15 @@ void CrateApp::BuildRootSignature()
 	// A root signature is an array of root parameters.
 	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(4, slotRootParameter,
 		(UINT)staticSamplers.size(), staticSamplers.data(),
-											D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 	// create a root signature with a single slot which points to a descriptor range consisting of a single constant buffer
 	ComPtr<ID3DBlob> serializedRootSig = nullptr;
 	ComPtr<ID3DBlob> errorBlob = nullptr;
 	HRESULT hr = D3D12SerializeRootSignature(&rootSigDesc, D3D_ROOT_SIGNATURE_VERSION_1,
-											 serializedRootSig.GetAddressOf(), errorBlob.GetAddressOf());
+		serializedRootSig.GetAddressOf(), errorBlob.GetAddressOf());
 
-	if(errorBlob != nullptr)
+	if (errorBlob != nullptr)
 	{
 		::OutputDebugStringA((char*)errorBlob->GetBufferPointer());
 	}
@@ -652,8 +653,8 @@ void CrateApp::BuildDescriptorHeaps()
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 		ImGui_ImplWin32_Init(mhMainWnd);
 		ImGui_ImplDX12_Init(md3dDevice.Get(), 3, DXGI_FORMAT_R8G8B8A8_UNORM,
-							mSrvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
-							mSrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+			mSrvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
+			mSrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 	}
 	hDescriptor.Offset(1, mCbvSrvDescriptorSize);
 	{
@@ -719,7 +720,7 @@ void CrateApp::BuildShapeGeometry()
 
 	std::vector<Vertex> vertices(box.Vertices.size());
 
-	for(size_t i = 0; i < box.Vertices.size(); ++i)
+	for (size_t i = 0; i < box.Vertices.size(); ++i)
 	{
 		vertices[i].Pos = box.Vertices[i].Position;
 		vertices[i].Normal = box.Vertices[i].Normal;
@@ -741,10 +742,10 @@ void CrateApp::BuildShapeGeometry()
 	CopyMemory(geo->IndexBufferCPU->GetBufferPointer(), indices.data(), ibByteSize);
 
 	geo->VertexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),
-														mCommandList.Get(), vertices.data(), vbByteSize, geo->VertexBufferUploader);
+		mCommandList.Get(), vertices.data(), vbByteSize, geo->VertexBufferUploader);
 
 	geo->IndexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),
-													   mCommandList.Get(), indices.data(), ibByteSize, geo->IndexBufferUploader);
+		mCommandList.Get(), indices.data(), ibByteSize, geo->IndexBufferUploader);
 
 	geo->VertexByteStride = sizeof(Vertex);
 	geo->VertexBufferByteSize = vbByteSize;
@@ -764,7 +765,7 @@ void CrateApp::BuildPSOs()
 	// PSO for opaque objects.
 	//
 	ZeroMemory(&opaquePsoDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
-	opaquePsoDesc.InputLayout = {mInputLayout.data(), (UINT)mInputLayout.size()};
+	opaquePsoDesc.InputLayout = { mInputLayout.data(), (UINT)mInputLayout.size() };
 	opaquePsoDesc.pRootSignature = mRootSignature.Get();
 	opaquePsoDesc.VS =
 	{
@@ -791,10 +792,10 @@ void CrateApp::BuildPSOs()
 
 void CrateApp::BuildFrameResources()
 {
-	for(int i = 0; i < gNumFrameResources; ++i)
+	for (int i = 0; i < gNumFrameResources; ++i)
 	{
 		mFrameResources.push_back(std::make_unique<FrameResource>(md3dDevice.Get(),
-																  1, (UINT)mAllRitems.size(), (UINT)mMaterials.size()));
+			1, (UINT)mAllRitems.size(), (UINT)mMaterials.size()));
 	}
 }
 
@@ -877,7 +878,7 @@ void CrateApp::BuildRenderItems()
 	}
 
 	// All the render items are opaque.
-	for(auto& e : mAllRitems)
+	for (auto& e : mAllRitems)
 		mOpaqueRitems.push_back(e.get());
 }
 
@@ -894,7 +895,7 @@ void CrateApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::ve
 	auto objectCB = mCurrFrameResource->ObjectCB->Resource();
 	auto matCB = mCurrFrameResource->MaterialCB->Resource();
 	// For each render item...
-	for(size_t i = 0; i < ritems.size(); ++i)
+	for (size_t i = 0; i < ritems.size(); ++i)
 	{
 		auto ri = ritems[i];
 
@@ -914,36 +915,118 @@ void CrateApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::ve
 
 		cmdList->DrawIndexedInstanced(ri->IndexCount, 1, ri->StartIndexLocation, ri->BaseVertexLocation, 0);
 	}
+	static std::string path = "";
+	static std::string name = "";
+	static bool openFileSaveDialog = false;
+	static bool openFileLoadDialog = false;
 
-	if(ImGui::BeginMainMenuBar())
+	if (openFileSaveDialog)
 	{
-		if(ImGui::BeginMenu("Action"))
+		if (ImGuiFileDialog::Instance()->FileDialog("Save File", (const char*)0, ".", selected_world->get_name().c_str()))
 		{
-			if(ImGui::MenuItem("Save"))
+			if (ImGuiFileDialog::Instance()->IsOk == true)
 			{
-				console->AddLog("[log] Save this World");
+				name = ImGuiFileDialog::Instance()->GetCurrentFileName();
+				if (name.find(".map", 0) == std::string::npos)
+				{
+					name += ".map";
+				}
+				path = ImGuiFileDialog::Instance()->GetCurrentPath();
+				if (trigger::component_world::save_world(path, name, selected_world))
+				{
+					console->AddLog("[log] Save this World, %s, %s", path.c_str(), name.c_str());
+				}
+				else 
+				{
+					console->AddLog("[error] Save Failed this World, %s, %s",path.c_str(), name.c_str());
+				}
 			}
-			if(ImGui::MenuItem("Save As"))
+			else
 			{
+				path = "";
+				name = "";
+			}
+			openFileSaveDialog = false;
+		}
+	}
+
+	if (openFileLoadDialog)
+	{
+		if (ImGuiFileDialog::Instance()->FileDialog("Load File", (const char*)0, ".", selected_world->get_name().c_str()))
+		{
+			if (ImGuiFileDialog::Instance()->IsOk == true)
+			{
+				name = ImGuiFileDialog::Instance()->GetCurrentFileName();
+				if (name.compare(selected_world->get_name()))
+				{
+					console->AddLog("[error] Load Failed already work in Engine, %s, %s", path.c_str(), name.c_str());
+					path = "";
+					name = "";
+					openFileLoadDialog = false;
+				}else if (name.find(".map", 0) == std::string::npos)
+				{
+					console->AddLog("[error] Load Failed this file is not Map File. %s, %s", path.c_str(), name.c_str());
+					path = "";
+					name = "";
+					openFileLoadDialog = false;
+				}
+				else
+				{
+					path = ImGuiFileDialog::Instance()->GetCurrentPath();
+					auto t = trigger::component_world::load_world(path + "/" + name);
+					if (t)
+					{
+						worlds.push_back(t);
+						console->AddLog("[log] Load World, %s, %s", path.c_str(), name.c_str());
+					}
+					else
+					{
+						console->AddLog("[error] Load Failed, %s, %s", path.c_str(), name.c_str());
+						path = "";
+						name = "";
+					}
+				}
+			}
+			else
+			{
+				path = "";
+				name = "";
+			}
+			openFileLoadDialog = false;
+		}
+	}
+
+	if (ImGui::BeginMainMenuBar())
+	{
+		if (ImGui::BeginMenu("Action"))
+		{
+			if (ImGui::MenuItem("Save"))
+			{
+				//TODO 현재 열린 맵 저장하기!
+				console->AddLog("[log]  Save! ");
+			}
+			if (ImGui::MenuItem("Save As"))
+			{
+				openFileSaveDialog = true;
 				console->AddLog("[log]  Save as ... ");
 			}
-			if(ImGui::MenuItem("Load"))
+			if (ImGui::MenuItem("Load"))
 			{
-				console->AddLog("[log] Load World");
+				openFileLoadDialog = true;
 			}
 			ImGui::Separator();
-			if(ImGui::MenuItem("Exit"))
+			if (ImGui::MenuItem("Exit"))
 			{
 				console->AddLog("[log] Bye Bye");
 				exit(0);
 			}
 			ImGui::EndMenu();
 		}
-		if(ImGui::BeginMenu("Window"))
+		if (ImGui::BeginMenu("Window"))
 		{
-			if(ImGui::MenuItem("Console"))
+			if (ImGui::MenuItem("Console"))
 			{
-				if(console_open)
+				if (console_open)
 				{
 					console_open = false;
 				}
@@ -954,13 +1037,13 @@ void CrateApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::ve
 			}
 			ImGui::EndMenu();
 		}
-		if(ImGui::BeginMenu("Game"))
+		if (ImGui::BeginMenu("Game"))
 		{
-			if(ImGui::MenuItem("Creat new Actor"))
+			if (ImGui::MenuItem("Creat new Actor"))
 			{
 				auto t = new trigger::actor();
-				t->name = "actor" + to_string(world->get_components<trigger::actor>().size());
-				world->add(t);
+				t->name = "actor" + to_string(selected_world->get_components<trigger::actor>().size());
+				selected_world->add(t);
 				console->AddLog("[log] new Actor spawn in World.");
 			}
 			ImGui::EndMenu();
@@ -968,30 +1051,41 @@ void CrateApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::ve
 		ImGui::EndMainMenuBar();
 	}
 
-	if(console_open)
+	if (console_open)
 	{
 		console->Draw("Trigger Console", &console_open);
 	}
 
 	ImGui::Begin("World");
-	for(auto i : world->get_components<trigger::actor>())
+	for (auto w : worlds)
 	{
-		if(ImGui::Selectable(i->name.c_str()))
+		if (ImGui::TreeNode(w->get_name().c_str()))
 		{
-			target = i;
+			selected_world = w;
+			auto tmp = w->get_components<trigger::actor>();
+			for (auto i : tmp)
+			{
+				if (ImGui::Selectable(i->name.c_str()))
+				{
+					target = i;
+				}
+			}
+			ImGui::TreePop();
 		}
+
 	}
+
 	ImGui::End();
 
-	if(target != nullptr)
+	if (target != nullptr)
 	{
-		if(ImGui::Begin("Controller"))
+		if (ImGui::Begin("Controller"))
 		{
-			if(ImGui::BeginMenu("Actions", "some Action for this Object"))
+			if (ImGui::BeginMenu("Actions", "some Action for this Object"))
 			{
-				if(ImGui::MenuItem("delete"))
+				if (ImGui::MenuItem("delete"))
 				{
-					if(world->delete_component(target))
+					if (selected_world->delete_component(target))
 					{
 						console->AddLog("[log] %s is Deleted in World!", target->name.c_str());
 					}
@@ -1004,7 +1098,7 @@ void CrateApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::ve
 			}
 			ImGui::Separator();
 
-			if(ImGui::Checkbox("", &target->active))
+			if (ImGui::Checkbox("", &target->active))
 			{
 
 			}
@@ -1088,6 +1182,6 @@ std::array<const CD3DX12_STATIC_SAMPLER_DESC, 6> CrateApp::GetStaticSamplers()
 	return {
 		pointWrap, pointClamp,
 		linearWrap, linearClamp,
-		anisotropicWrap, anisotropicClamp};
+		anisotropicWrap, anisotropicClamp };
 }
 

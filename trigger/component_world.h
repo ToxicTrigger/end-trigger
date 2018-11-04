@@ -4,6 +4,8 @@
 #include <chrono>
 #include <thread>
 #include <mutex>
+#include "../json/single_include/nlohmann/json.hpp"
+#include <fstream>
 
 #include "component.h"
 
@@ -17,6 +19,7 @@ namespace trigger
 		typedef chrono::time_point<chrono::steady_clock> Time;
 
 	private:
+		string name;
 		list<component*> components;
 		Time start_time;
 		chrono::duration<float> delta_time;
@@ -40,9 +43,31 @@ namespace trigger
 			}
 		}
 
+		explicit inline component_world(bool UseThread, string name)
+		{
+			components = list<component*>();
+			start_time = time::now();
+			set_name(name);
+
+			use_thread = UseThread;
+			if(UseThread)
+			{
+				main_thread = thread(&component_world::update, this, delta_time.count());
+			}
+		}
+
 		inline float get_delta_time() const noexcept
 		{
 			return delta_time.count();
+		}
+
+		inline void set_name(const string name)
+		{
+			this->name = name;
+		}
+		inline const string& get_name()
+		{
+			return this->name;
 		}
 
 		template<typename T>
@@ -158,6 +183,37 @@ namespace trigger
 				lock.unlock();
 				delta_time = chrono::duration_cast<chrono::duration<float>>(time::now() - t);
 			}
+		}
+
+		//TODO
+		static bool save_world(string path, string name, component_world *world)
+		{
+			using json = nlohmann::json;
+
+			ofstream o(path + "/" +name);
+			if(!o.is_open()) return false;
+			json j;
+			j["use_thread"] = world->use_thread;
+			j["name"] = world->name;
+			o << j;
+			o.close();
+			return true;
+		}
+
+		//TODO
+		static inline component_world* load_world(string path)
+		{
+			using json = nlohmann::json;
+			bool use_thread_local = false;
+			json j;
+
+			std::ifstream i(path.c_str());
+			if(!i.is_open()) return nullptr;
+			
+			i >> j;
+
+			component_world *world = new component_world(j["use_thread"].get<bool>(), j["name"].get<string>());
+			return world;
 		}
 
 		~component_world()

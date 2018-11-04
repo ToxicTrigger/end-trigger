@@ -14,6 +14,7 @@ namespace trigger
 
 	public:
 		std::string name;
+		//transform 으로 분리
 		XMFLOAT3 position, rotation, scale;
 		trigger::fsm::map fsm;
 

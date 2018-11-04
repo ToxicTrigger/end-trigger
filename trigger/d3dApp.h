@@ -133,6 +133,7 @@ protected:
 	int mClientWidth = 800;
 	int mClientHeight = 600;
 
-	trigger::component_world *world;
+	list<trigger::component_world*> worlds;
+	trigger::component_world *selected_world;
 };
 

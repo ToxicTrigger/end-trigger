@@ -40,6 +40,7 @@
 #include "actor.h"
 #include "trigger_console.h"
 #include "Camera.h"
+#include "ImGuiFileDialog.h"
 
 extern const int gNumFrameResources;
 
