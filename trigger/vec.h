@@ -57,24 +57,20 @@ namespace trigger
 		}
 		friend vec operator -(const float p, const vec& v2)
 		{
-			if (v1.w != 0)
+			if (v2.w != 0)
 				return  vec(p - v2.x, p - v2.y, p - v2.z);
 			else
-				return  vec(v1.x, v1.y, v1.z);
+				return  vec(v2.x, v2.y, v2.z);
 		}
 		friend void operator +=(vec& v1, const vec& v2)
 		{
 			if (v1.w != 0)
 				v1 = vec(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z);
-			else
-				return  vec(v1.x, v1.y, v1.z);
 		}
 		friend void operator -=(vec& v1, const vec& v2)
 		{
 			if (v1.w != 0)
 				v1 = vec(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z);
-			else
-				return  vec(v1.x, v1.y, v1.z);
 		}
 		friend vec operator /(const vec& v1, const vec& v2)
 		{
