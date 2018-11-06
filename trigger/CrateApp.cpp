@@ -488,13 +488,13 @@ void CrateApp::UpdateObjectCBs(const GameTimer& gt)
 			XMMATRIX texTransform = XMLoadFloat4x4(&e->TexTransform);
 
 			ObjectConstants objConstants;
-			XMMATRIX x = XMMatrixRotationX(target->rotation.x);
-			XMMATRIX y = XMMatrixRotationY(target->rotation.y);
-			XMMATRIX z = XMMatrixRotationZ(target->rotation.z);
+			XMMATRIX x = XMMatrixRotationX(target->s_transform.rotation.x);
+			XMMATRIX y = XMMatrixRotationY(target->s_transform.rotation.y);
+			XMMATRIX z = XMMatrixRotationZ(target->s_transform.rotation.z);
 
-			XMMATRIX s = XMMatrixScaling(target->scale.x, target->scale.y, target->scale.z);
+			XMMATRIX s = XMMatrixScaling(target->s_transform.scale.x, target->s_transform.scale.y, target->s_transform.scale.z);
 
-			XMStoreFloat4x4(&objConstants.World, XMMatrixTranspose(world * s * (x * y * z) * (XMMatrixTranslation(target->position.x, target->position.y, target->position.z))));
+			XMStoreFloat4x4(&objConstants.World, XMMatrixTranspose(world * s * (x * y * z) * (XMMatrixTranslation(target->s_transform.position.x, target->s_transform.position.y, target->s_transform.position.z))));
 			XMStoreFloat4x4(&objConstants.TexTransform, XMMatrixTranspose(texTransform));
 
 			currObjectCB->CopyData(e->ObjCBIndex, objConstants);
@@ -1106,18 +1106,18 @@ void CrateApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::ve
 			ImGui::InputText("Name", &target->name);
 
 			ImGui::InputFloat3("position ", pos, -10, 10);
-			target->position.x = pos[0];
-			target->position.y = pos[1];
-			target->position.z = pos[2];
+			target->s_transform.position.x = pos[0];
+			target->s_transform.position.y = pos[1];
+			target->s_transform.position.z = pos[2];
 			ImGui::Separator();
 
-			ImGui::InputFloat("X", &target->rotation.x);
-			ImGui::InputFloat("Y", &target->rotation.y);
-			ImGui::InputFloat("Z", &target->rotation.z);
+			ImGui::InputFloat("X", &target->s_transform.rotation.x);
+			ImGui::InputFloat("Y", &target->s_transform.rotation.y);
+			ImGui::InputFloat("Z", &target->s_transform.rotation.z);
 			ImGui::Separator();
-			ImGui::InputFloat("W", &target->scale.x);
-			ImGui::InputFloat("H", &target->scale.y);
-			ImGui::InputFloat("D", &target->scale.z);
+			ImGui::InputFloat("W", &target->s_transform.scale.x);
+			ImGui::InputFloat("H", &target->s_transform.scale.y);
+			ImGui::InputFloat("D", &target->s_transform.scale.z);
 			ImGui::Separator();
 
 		}
