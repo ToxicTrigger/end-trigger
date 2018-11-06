@@ -26,20 +26,18 @@ steps:
     configuration: '$(buildConfiguration)'
     msbuildArgs: '/p:AppxBundlePlatforms="$(buildPlatform)" /p:AppxPackageDir="$(appxPackageDir)" /p:AppxBundle=Always /p:UapAppxPackageBuildMode=StoreUpload'
 
-- task: CopyFiles@2
+- task: DownloadBuildArtifacts@0
   inputs:
-    #sourceFolder: # Optional
-    #contents: '**' 
-    targetFolder: '$(Build.ArtifactStagingDirectory)'
-    #cleanTargetFolder: false # Optional
-    //overWrite: false # Optional
-    flattenFolders: false # Optional
-    
-- task: PublishBuildArtifacts@1
-  inputs:
-    pathtoPublish: '$(Build.ArtifactStagingDirectory)' 
-    artifactName: 'drop' 
-    publishLocation: 'Container' # Options: container, filePath
-    targetPath: '$(Build.ArtifactStagingDirectory)' # Required when publishLocation == FilePath
-    parallel: false # Optional
-    #parallelCount: # Optional
+    buildType: 'current' # Options: current, specific
+    #project: # Required when buildType == Specific
+    #pipeline: # Required when buildType == Specific
+    specificBuildWithTriggering: false # Optional
+    #buildVersionToDownload: 'latest' # Required when buildType == Specific# Options: latest, latestFromBranch, specific
+    #branchName: 'refs/heads/master' # Required when buildType == Specific && BuildVersionToDownload == LatestFromBranch
+    #buildId: # Required when buildType == Specific && BuildVersionToDownload == Specific
+    #tags: # Optional
+    downloadType: 'single' # Options: single, specific
+    #artifactName: # Required when downloadType == Single
+    #itemPattern: '**' # Optional
+    downloadPath: '$(System.ArtifactsDirectory)' 
+    #parallelizationLimit: '8' # Optional
