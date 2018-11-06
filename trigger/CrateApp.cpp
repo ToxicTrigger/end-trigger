@@ -1103,22 +1103,42 @@ void CrateApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::ve
 
 			}
 			ImGui::SameLine();
+			if (ImGui::Checkbox("Static", &target->is_static))
+			{
+				if (&target->is_static)
+				{
+					target->s_transform.position.w = 0;
+					target->s_transform.rotation.w = 0;
+					target->s_transform.scale.w = 0;
+				}
+				else
+				{
+					target->s_transform.position.w = 1;
+					target->s_transform.rotation.w = 1;
+					target->s_transform.scale.w = 1;
+				}
+			}
+			ImGui::SameLine();
 			ImGui::InputText("Name", &target->name);
+			if (!target->is_static)
+			{
+				ImGui::InputFloat3("position ", pos, -10, 10);
+				target->s_transform.position.x = pos[0];
+				target->s_transform.position.y = pos[1];
+				target->s_transform.position.z = pos[2];
+				ImGui::Separator();
 
-			ImGui::InputFloat3("position ", pos, -10, 10);
-			target->s_transform.position.x = pos[0];
-			target->s_transform.position.y = pos[1];
-			target->s_transform.position.z = pos[2];
-			ImGui::Separator();
-
-			ImGui::InputFloat("X", &target->s_transform.rotation.x);
-			ImGui::InputFloat("Y", &target->s_transform.rotation.y);
-			ImGui::InputFloat("Z", &target->s_transform.rotation.z);
-			ImGui::Separator();
-			ImGui::InputFloat("W", &target->s_transform.scale.x);
-			ImGui::InputFloat("H", &target->s_transform.scale.y);
-			ImGui::InputFloat("D", &target->s_transform.scale.z);
-			ImGui::Separator();
+				//deg -> rad
+				ImGui::InputFloat("X", &target->s_transform.rotation.x);
+				ImGui::InputFloat("Y", &target->s_transform.rotation.y);
+				ImGui::InputFloat("Z", &target->s_transform.rotation.z);
+				ImGui::Separator();
+				ImGui::InputFloat("W", &target->s_transform.scale.x);
+				ImGui::InputFloat("H", &target->s_transform.scale.y);
+				ImGui::InputFloat("D", &target->s_transform.scale.z);
+				ImGui::Separator();
+			}
+			//drawGui() <- component On State
 
 		}
 		ImGui::End();

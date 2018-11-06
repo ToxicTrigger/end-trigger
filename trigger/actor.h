@@ -16,6 +16,7 @@ namespace trigger
 	class actor : public trigger::component
 	{
 	public:
+		bool is_static;
 		std::string name;
 		std::unique_ptr<actor> parent;
 		std::unique_ptr<actor> child;
