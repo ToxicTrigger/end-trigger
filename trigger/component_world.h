@@ -7,7 +7,8 @@
 #include "../json/single_include/nlohmann/json.hpp"
 #include <fstream>
 
-#include "component.h"
+#include "actor.h"
+
 
 using namespace std;
 
@@ -193,8 +194,28 @@ namespace trigger
 			ofstream o(path + "/" +name);
 			if(!o.is_open()) return false;
 			json j;
-			j["use_thread"] = world->use_thread;
-			j["name"] = world->name;
+			j["world"][world->name]["use_thread"]= world->use_thread;
+			j["world"][world->name]["components"] = {};
+
+
+			auto ac = world->get_components<actor>();
+			for( auto i : ac )
+			{
+				json actors;
+				auto trans = i->s_transform;
+				//actors[i->name]["info"] = {{"active", i->active},{"child", i->child->name },{"parent", i->parent->name },{ "static" , i->is_static}};
+				actors[i->name]["trans"]["pos"] = {trans.position.x, trans.position.y,trans.position.z,trans.position.w};
+				actors[i->name]["trans"]["rot"] = {trans.rotation.x, trans.rotation.y,trans.rotation.z,trans.rotation.w};
+				actors[i->name]["trans"]["sca"] = {trans.scale.x, trans.scale.y,trans.scale.z,trans.scale.w};
+				actors[i->name]["active"] = i->active;
+				if(i->child != nullptr)
+					actors[i->name]["child:" + i->child->name] = i->child->name;
+				if( i->parent != nullptr )
+					actors[i->name][i->parent->name] = i->parent->name;
+				actors[i->name]["static"] = i->is_static;
+				j["world"][world->name]["components"]["actors"] += actors;
+			}
+
 			o << j;
 			o.close();
 			return true;
