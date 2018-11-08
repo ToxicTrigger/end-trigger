@@ -919,6 +919,15 @@ void CrateApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::ve
 	static std::string name = "";
 	static bool openFileSaveDialog = false;
 	static bool openFileLoadDialog = false;
+	static bool openWorldNameChange = false;
+	static string world_name;
+	if( openWorldNameChange )
+	{
+		ImGui::Begin( "name change" , &openWorldNameChange);
+		ImGui::InputText( ":World Name", &world_name );
+		selected_world->set_name( world_name );
+		ImGui::End();
+	}
 
 	if (openFileSaveDialog)
 	{
@@ -957,7 +966,17 @@ void CrateApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::ve
 			if (ImGuiFileDialog::Instance()->IsOk == true)
 			{
 				name = ImGuiFileDialog::Instance()->GetCurrentFileName();
-				if (name.compare(selected_world->get_name()))
+				bool already = false;
+				for( auto map : worlds )
+				{
+					if( name.find( map->get_name() + ".map", 0 ) != std::string::npos )
+					{
+						already = true;
+						break;
+					}
+				}
+				
+				if (already)
 				{
 					console->AddLog("[error] Load Failed already work in Engine, %s, %s", path.c_str(), name.c_str());
 					path = "";
@@ -1039,6 +1058,18 @@ void CrateApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::ve
 		}
 		if (ImGui::BeginMenu("Game"))
 		{
+			if( ImGui::MenuItem( "World Name Change" ) )
+			{
+				if( openWorldNameChange )
+				{
+					openWorldNameChange = false;
+				}
+				else
+				{
+					openWorldNameChange = true;
+				}
+			}
+
 			if (ImGui::MenuItem("Creat new Actor"))
 			{
 				auto t = new trigger::actor();
