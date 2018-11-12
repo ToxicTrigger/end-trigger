@@ -22,7 +22,7 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{BB72B1F7-93D1-4105-9A18-0EE92175F991}</ProjectGuid>
     <RootNamespace>trigger</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -148,6 +148,7 @@
     <ClInclude Include="imstb_textedit.h" />
     <ClInclude Include="imstb_truetype.h" />
     <ClInclude Include="MathHelper.h" />
+    <ClInclude Include="renderer.h" />
     <ClInclude Include="texture.h" />
     <ClInclude Include="trigger_console.h" />
     <ClInclude Include="UploadBuffer.h" />

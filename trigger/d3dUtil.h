@@ -42,6 +42,7 @@
 #include "trigger_console.h"
 #include "Camera.h"
 #include "ImGuiFileDialog.h"
+#include "GeometryGenerator.h"
 
 extern const int gNumFrameResources;
 

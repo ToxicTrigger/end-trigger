@@ -235,7 +235,6 @@ namespace trigger
 		{
 			using json = nlohmann::json;
 
-
 			bool use_thread_local = false;
 			json j;
 

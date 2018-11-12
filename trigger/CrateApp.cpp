@@ -430,38 +430,41 @@ void CrateApp::OnKeyboardInput(WPARAM btnState)
 
 void CrateApp::UpdateCamera(const GameTimer& gt)
 {
+	float velocity = 1.0f;
+	if (GetAsyncKeyState(VK_LSHIFT) & 0x8000)
+	{
+		velocity += 5.0f;
+	}
 	if (GetAsyncKeyState('W') & 0x8000)
 	{
-		cam.Walk(1.0f * gt.DeltaTime());
+		cam.Walk(velocity * gt.DeltaTime());
 	}
-
 	if (GetAsyncKeyState('S') & 0x8000)
 	{
-		cam.Walk(-1.0f * gt.DeltaTime());
+		cam.Walk(-velocity * gt.DeltaTime());
 	}
 	if (GetAsyncKeyState('A') & 0x8000)
 	{
-		cam.Strafe(-1.0f * gt.DeltaTime());
+		cam.Strafe(-velocity * gt.DeltaTime());
 	}
 	if (GetAsyncKeyState('D') & 0x8000)
 	{
-		cam.Strafe(1.0f * gt.DeltaTime());
+		cam.Strafe(velocity * gt.DeltaTime());
+	}	
+
+	if (GetAsyncKeyState('Q') * 0x8000)
+	{
+		auto a = cam.GetPosition3f();
+		a.y += velocity * gt.DeltaTime();
+		cam.SetPosition(a);
+	}
+	if (GetAsyncKeyState('E') * 0x8000)
+	{
+		auto a = cam.GetPosition3f();
+		a.y -= velocity * gt.DeltaTime();
+		cam.SetPosition(a);
 	}
 
-	// Convert Spherical to Cartesian coordinates.
-	//mEyePos.x = mEyePos.x  + h * 0.001f * (sinf( mPhi )*cosf( mTheta ));
-	//mEyePos.z = mEyePos.z + v * 0.001f * (sinf( mPhi )*sinf( mTheta ));
-	//mEyePos.x = mEyePos.x + h * 0.001f;
-	//mEyePos.z = mEyePos.z + v * 0.001f;
-	//mEyePos.y = mRadius * cosf(mPhi);
-
-	// Build the view matrix.
-	//XMVECTOR pos = XMVectorSet(mEyePos.x, mEyePos.y, mEyePos.z, 1.0f);
-	//XMVECTOR target =  XMVector3Normalize(pos) - pos;
-	//XMVECTOR target = XMVectorZero();
-	//XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-
-	//XMMATRIX view = XMMatrixLookAtLH(pos, target, up);
 	cam.UpdateViewMatrix();
 	XMMATRIX view = cam.GetView();
 	XMMATRIX p = cam.GetProj();
@@ -478,14 +481,16 @@ void CrateApp::AnimateMaterials(const GameTimer& gt)
 void CrateApp::UpdateObjectCBs(const GameTimer& gt)
 {
 	auto currObjectCB = mCurrFrameResource->ObjectCB.get();
+	XMMATRIX world = XMMatrixIdentity();
+	XMMATRIX texTransform = XMMatrixIdentity();
 	for (auto& e : mAllRitems)
 	{
 		// Only update the cbuffer data if the constants have changed.  
 		// This needs to be tracked per frame resource.
 		if (e->NumFramesDirty > 0)
 		{
-			XMMATRIX world = XMLoadFloat4x4(&e->World);
-			XMMATRIX texTransform = XMLoadFloat4x4(&e->TexTransform);
+			world = world * XMLoadFloat4x4(&e->World);
+			texTransform = world * XMLoadFloat4x4(&e->TexTransform);
 
 			ObjectConstants objConstants;
 			XMMATRIX x = XMMatrixRotationX(target->s_transform.rotation.x);
@@ -711,50 +716,100 @@ void CrateApp::BuildShadersAndInputLayout()
 void CrateApp::BuildShapeGeometry()
 {
 	GeometryGenerator geoGen;
-	GeometryGenerator::MeshData box = geoGen.CreateBox(1.0f, 1.0f, 1.0f, 3);
-
-	SubmeshGeometry boxSubmesh;
-	boxSubmesh.IndexCount = (UINT)box.Indices32.size();
-	boxSubmesh.StartIndexLocation = 0;
-	boxSubmesh.BaseVertexLocation = 0;
-
-	std::vector<Vertex> vertices(box.Vertices.size());
-
-	for (size_t i = 0; i < box.Vertices.size(); ++i)
 	{
-		vertices[i].Pos = box.Vertices[i].Position;
-		vertices[i].Normal = box.Vertices[i].Normal;
-		vertices[i].TexC = box.Vertices[i].TexC;
+		GeometryGenerator::MeshData grid = geoGen.CreateGrid(_FMAX, _FMAX, _FMAX, _FMAX);
+
+		SubmeshGeometry gridSubmesh;
+		gridSubmesh.IndexCount = (UINT)grid.Indices32.size();
+		gridSubmesh.StartIndexLocation = 0;
+		gridSubmesh.BaseVertexLocation = 0;
+
+		std::vector<Vertex> vertices(grid.Vertices.size());
+
+		for (size_t i = 0; i < grid.Vertices.size(); ++i)
+		{
+			vertices[i].Pos = grid.Vertices[i].Position;
+			vertices[i].Normal = grid.Vertices[i].Normal;
+			vertices[i].TexC = grid.Vertices[i].TexC;
+		}
+
+		std::vector<std::uint16_t> indices = grid.GetIndices16();
+
+		const UINT vbByteSize = (UINT)vertices.size() * sizeof(Vertex);
+		const UINT ibByteSize = (UINT)indices.size() * sizeof(std::uint16_t);
+
+		auto geo = std::make_unique<MeshGeometry>();
+		geo->Name = "gridGeo";
+
+		ThrowIfFailed(D3DCreateBlob(vbByteSize, &geo->VertexBufferCPU));
+		CopyMemory(geo->VertexBufferCPU->GetBufferPointer(), vertices.data(), vbByteSize);
+
+		ThrowIfFailed(D3DCreateBlob(ibByteSize, &geo->IndexBufferCPU));
+		CopyMemory(geo->IndexBufferCPU->GetBufferPointer(), indices.data(), ibByteSize);
+
+		geo->VertexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),
+			mCommandList.Get(), vertices.data(), vbByteSize, geo->VertexBufferUploader);
+
+		geo->IndexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),
+			mCommandList.Get(), indices.data(), ibByteSize, geo->IndexBufferUploader);
+
+		geo->VertexByteStride = sizeof(Vertex);
+		geo->VertexBufferByteSize = vbByteSize;
+		geo->IndexFormat = DXGI_FORMAT_R16_UINT;
+		geo->IndexBufferByteSize = ibByteSize;
+
+		geo->DrawArgs["grid"] = gridSubmesh;
+
+		mGeometries[geo->Name] = std::move(geo);
 	}
 
-	std::vector<std::uint16_t> indices = box.GetIndices16();
+	{
+		GeometryGenerator::MeshData box = geoGen.CreateBox(1.0f, 1.0f, 1.0f, 3);
 
-	const UINT vbByteSize = (UINT)vertices.size() * sizeof(Vertex);
-	const UINT ibByteSize = (UINT)indices.size() * sizeof(std::uint16_t);
+		SubmeshGeometry boxSubmesh;
+		boxSubmesh.IndexCount = (UINT)box.Indices32.size();
+		boxSubmesh.StartIndexLocation = 0;
+		boxSubmesh.BaseVertexLocation = 0;
 
-	auto geo = std::make_unique<MeshGeometry>();
-	geo->Name = "boxGeo";
+		std::vector<Vertex> vertices(box.Vertices.size());
 
-	ThrowIfFailed(D3DCreateBlob(vbByteSize, &geo->VertexBufferCPU));
-	CopyMemory(geo->VertexBufferCPU->GetBufferPointer(), vertices.data(), vbByteSize);
+		for (size_t i = 0; i < box.Vertices.size(); ++i)
+		{
+			vertices[i].Pos = box.Vertices[i].Position;
+			vertices[i].Normal = box.Vertices[i].Normal;
+			vertices[i].TexC = box.Vertices[i].TexC;
+		}
 
-	ThrowIfFailed(D3DCreateBlob(ibByteSize, &geo->IndexBufferCPU));
-	CopyMemory(geo->IndexBufferCPU->GetBufferPointer(), indices.data(), ibByteSize);
+		std::vector<std::uint16_t> indices = box.GetIndices16();
 
-	geo->VertexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),
-		mCommandList.Get(), vertices.data(), vbByteSize, geo->VertexBufferUploader);
+		const UINT vbByteSize = (UINT)vertices.size() * sizeof(Vertex);
+		const UINT ibByteSize = (UINT)indices.size() * sizeof(std::uint16_t);
 
-	geo->IndexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),
-		mCommandList.Get(), indices.data(), ibByteSize, geo->IndexBufferUploader);
+		auto geo = std::make_unique<MeshGeometry>();
+		geo->Name = "boxGeo";
 
-	geo->VertexByteStride = sizeof(Vertex);
-	geo->VertexBufferByteSize = vbByteSize;
-	geo->IndexFormat = DXGI_FORMAT_R16_UINT;
-	geo->IndexBufferByteSize = ibByteSize;
+		ThrowIfFailed(D3DCreateBlob(vbByteSize, &geo->VertexBufferCPU));
+		CopyMemory(geo->VertexBufferCPU->GetBufferPointer(), vertices.data(), vbByteSize);
 
-	geo->DrawArgs["box"] = boxSubmesh;
+		ThrowIfFailed(D3DCreateBlob(ibByteSize, &geo->IndexBufferCPU));
+		CopyMemory(geo->IndexBufferCPU->GetBufferPointer(), indices.data(), ibByteSize);
 
-	mGeometries[geo->Name] = std::move(geo);
+		geo->VertexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),
+			mCommandList.Get(), vertices.data(), vbByteSize, geo->VertexBufferUploader);
+
+		geo->IndexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),
+			mCommandList.Get(), indices.data(), ibByteSize, geo->IndexBufferUploader);
+
+		geo->VertexByteStride = sizeof(Vertex);
+		geo->VertexBufferByteSize = vbByteSize;
+		geo->IndexFormat = DXGI_FORMAT_R16_UINT;
+		geo->IndexBufferByteSize = ibByteSize;
+
+		geo->DrawArgs["box"] = boxSubmesh;
+
+		mGeometries[geo->Name] = std::move(geo);
+	}
+	
 }
 
 void CrateApp::BuildPSOs()
@@ -877,6 +932,18 @@ void CrateApp::BuildRenderItems()
 		mAllRitems.push_back(std::move(boxRitem));
 	}
 
+	{
+		auto gridRitem = std::make_unique<RenderItem>();
+		gridRitem->ObjCBIndex = 0;
+		gridRitem->Mat = mMaterials["woodCrate3"].get();
+		gridRitem->Geo = mGeometries["gridGeo"].get();
+		gridRitem->PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP;
+		gridRitem->IndexCount = gridRitem->Geo->DrawArgs["grid"].IndexCount;
+		gridRitem->StartIndexLocation = gridRitem->Geo->DrawArgs["grid"].StartIndexLocation;
+		gridRitem->BaseVertexLocation = gridRitem->Geo->DrawArgs["grid"].BaseVertexLocation;
+		mAllRitems.push_back(std::move(gridRitem));
+	}
+
 	// All the render items are opaque.
 	for (auto& e : mAllRitems)
 		mOpaqueRitems.push_back(e.get());
@@ -884,10 +951,6 @@ void CrateApp::BuildRenderItems()
 
 void CrateApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderItem*>& ritems)
 {
-	//Draw Gui
-	ImGui_ImplDX12_NewFrame();
-	ImGui_ImplWin32_NewFrame();
-	ImGui::NewFrame();
 
 	UINT objCBByteSize = d3dUtil::CalcConstantBufferByteSize(sizeof(ObjectConstants));
 	UINT matCBByteSize = d3dUtil::CalcConstantBufferByteSize(sizeof(MaterialConstants));
@@ -914,18 +977,25 @@ void CrateApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::ve
 		cmdList->SetGraphicsRootConstantBufferView(3, matCBAddress);
 
 		cmdList->DrawIndexedInstanced(ri->IndexCount, 1, ri->StartIndexLocation, ri->BaseVertexLocation, 0);
+
 	}
+
 	static std::string path = "";
 	static std::string name = "";
 	static bool openFileSaveDialog = false;
 	static bool openFileLoadDialog = false;
 	static bool openWorldNameChange = false;
 	static string world_name;
-	if( openWorldNameChange )
+	//Draw Gui
+	ImGui_ImplDX12_NewFrame();
+	ImGui_ImplWin32_NewFrame();
+	ImGui::NewFrame();
+
+	if (openWorldNameChange)
 	{
-		ImGui::Begin( "name change" , &openWorldNameChange);
-		ImGui::InputText( ":World Name", &world_name );
-		selected_world->set_name( world_name );
+		ImGui::Begin("name change", &openWorldNameChange);
+		ImGui::InputText(":World Name", &world_name);
+		selected_world->set_name(world_name);
 		ImGui::End();
 	}
 
@@ -945,9 +1015,9 @@ void CrateApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::ve
 				{
 					console->AddLog("[log] Save this World, %s, %s", path.c_str(), name.c_str());
 				}
-				else 
+				else
 				{
-					console->AddLog("[error] Save Failed this World, %s, %s",path.c_str(), name.c_str());
+					console->AddLog("[error] Save Failed this World, %s, %s", path.c_str(), name.c_str());
 				}
 			}
 			else
@@ -967,22 +1037,23 @@ void CrateApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::ve
 			{
 				name = ImGuiFileDialog::Instance()->GetCurrentFileName();
 				bool already = false;
-				for( auto map : worlds )
+				for (auto map : worlds)
 				{
-					if( name.find( map->get_name() + ".map", 0 ) != std::string::npos )
+					if (name.find(map->get_name() + ".map", 0) != std::string::npos)
 					{
 						already = true;
 						break;
 					}
 				}
-				
+
 				if (already)
 				{
 					console->AddLog("[error] Load Failed already work in Engine, %s, %s", path.c_str(), name.c_str());
 					path = "";
 					name = "";
 					openFileLoadDialog = false;
-				}else if (name.find(".map", 0) == std::string::npos)
+				}
+				else if (name.find(".map", 0) == std::string::npos)
 				{
 					console->AddLog("[error] Load Failed this file is not Map File. %s, %s", path.c_str(), name.c_str());
 					path = "";
@@ -1058,9 +1129,9 @@ void CrateApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::ve
 		}
 		if (ImGui::BeginMenu("Game"))
 		{
-			if( ImGui::MenuItem( "World Name Change" ) )
+			if (ImGui::MenuItem("World Name Change"))
 			{
-				if( openWorldNameChange )
+				if (openWorldNameChange)
 				{
 					openWorldNameChange = false;
 				}

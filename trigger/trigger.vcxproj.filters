@@ -121,6 +121,9 @@
     <ClInclude Include="vec.h">
       <Filter>헤더 파일\game</Filter>
     </ClInclude>
+    <ClInclude Include="renderer.h">
+      <Filter>헤더 파일\game</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="imgui.cpp">
