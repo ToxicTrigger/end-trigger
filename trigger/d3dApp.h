@@ -58,6 +58,9 @@ protected:
 	virtual void OnMouseDown(WPARAM btnState, int x, int y){ }
 	virtual void OnMouseUp(WPARAM btnState, int x, int y)  { }
 	virtual void OnMouseMove(WPARAM btnState, int x, int y){ }
+	virtual void OnKeyboardInput( WPARAM btnState ){ }
+	virtual void OnKeyboardInputUp( WPARAM btnState )
+	{}
 
 protected:
 
@@ -91,7 +94,7 @@ protected:
     bool      mFullscreenState = false;// fullscreen enabled
 
 	// Set true to use 4X MSAA (?.1.8).  The default is false.
-    bool      m4xMsaaState = false;    // 4X MSAA enabled
+	bool      m4xMsaaState = false;    // 4X MSAA enabled
     UINT      m4xMsaaQuality = 0;      // quality level of 4X MSAA
 
 	GameTimer mTimer;
@@ -129,5 +132,8 @@ protected:
     DXGI_FORMAT mDepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 	int mClientWidth = 800;
 	int mClientHeight = 600;
+
+	list<trigger::component_world*> worlds;
+	trigger::component_world *selected_world;
 };
 

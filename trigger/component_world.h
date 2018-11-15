@@ -4,8 +4,11 @@
 #include <chrono>
 #include <thread>
 #include <mutex>
+#include "../json/single_include/nlohmann/json.hpp"
+#include <fstream>
 
-#include "component.h"
+#include "actor.h"
+
 
 using namespace std;
 
@@ -17,6 +20,7 @@ namespace trigger
 		typedef chrono::time_point<chrono::steady_clock> Time;
 
 	private:
+		string name;
 		list<component*> components;
 		Time start_time;
 		chrono::duration<float> delta_time;
@@ -40,9 +44,31 @@ namespace trigger
 			}
 		}
 
+		explicit inline component_world( bool UseThread, string name )
+		{
+			components = list<component*>();
+			start_time = time::now();
+			set_name( name );
+
+			use_thread = UseThread;
+			if( UseThread )
+			{
+				main_thread = thread( &component_world::update, this, delta_time.count() );
+			}
+		}
+
 		inline float get_delta_time() const noexcept
 		{
 			return delta_time.count();
+		}
+
+		inline void set_name( const string name )
+		{
+			this->name = name;
+		}
+		inline const string& get_name()
+		{
+			return this->name;
 		}
 
 		template<typename T>
@@ -58,6 +84,11 @@ namespace trigger
 			}
 			return nullptr;
 		};
+
+		inline list<component*> get_all() const
+		{
+			return this->components;
+		}
 
 		template<typename T>
 		inline constexpr list<T*> get_components()
@@ -82,10 +113,10 @@ namespace trigger
 			std::advance( i, index );
 			return *i;
 		}
-		
+
 		inline constexpr bool delete_component( component *target ) noexcept
 		{
-			if( target != nullptr && components.size() != 0)
+			if( target != nullptr && components.size() != 0 )
 			{
 				lock.lock();
 				components.remove( target );
@@ -125,7 +156,7 @@ namespace trigger
 			{
 				if( components.size() != 0 )
 				{
-					while( this->active && use_thread )
+					while( this->active )
 					{
 						update_all();
 					}
@@ -153,6 +184,68 @@ namespace trigger
 				lock.unlock();
 				delta_time = chrono::duration_cast<chrono::duration<float>>(time::now() - t);
 			}
+		}
+
+		//TODO
+		static bool save_world( string path, string name, component_world *world )
+		{
+			mutex lockd;
+			using json = nlohmann::json;
+
+			lockd.lock();
+
+			thread t( []( string p, string n, component_world *w )
+			{
+				ofstream o( p + "/" + n );
+				if( !o.is_open() ) return false;
+				json j;
+				j["world"]["name"] = w->name;
+				j["world"][w->name]["use_thread"] = w->use_thread;
+				j["world"][w->name]["components"] = {};
+				auto ac = w->get_components<actor>();
+				for( auto i : ac )
+				{
+					json actors;
+					auto trans = i->s_transform;
+					actors["name"] = i->name;
+					//actors[i->name]["info"] = {{"active", i->active},{"child", i->child->name },{"parent", i->parent->name },{ "static" , i->is_static}};
+					actors[i->name]["trans"]["pos"] = {trans.position.x, trans.position.y,trans.position.z,trans.position.w};
+					actors[i->name]["trans"]["rot"] = {trans.rotation.x, trans.rotation.y,trans.rotation.z,trans.rotation.w};
+					actors[i->name]["trans"]["sca"] = {trans.scale.x, trans.scale.y,trans.scale.z,trans.scale.w};
+					actors[i->name]["active"] = i->active;
+					if( i->child != nullptr )
+						actors[i->name]["child:" + i->child->name] = i->child->name;
+					if( i->parent != nullptr )
+						actors[i->name][i->parent->name] = i->parent->name;
+					actors[i->name]["static"] = i->is_static;
+					j["world"][w->name]["components"]["actors"] += actors;
+				}
+
+				o << j;
+				o.close();
+			}, path, name, world
+			);
+			t.join();
+			lockd.unlock();
+			return true;
+		}
+
+		//TODO
+		static inline component_world* load_world( string path )
+		{
+			using json = nlohmann::json;
+
+			bool use_thread_local = false;
+			json j;
+
+			std::ifstream i( path.c_str() );
+			if( !i.is_open() ) return nullptr;
+			i >> j;
+			string world_name = j["world"]["name"].get<string>();
+			auto world = new component_world( j["world"][world_name]["use_thread"].get<bool>(), world_name );
+			auto actors = j["world"][world_name]["components"]["actors"];
+
+			return world;
 		}
 
 		~component_world()

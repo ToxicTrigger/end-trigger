@@ -1,0 +1,1 @@
+{"world":{"hi":{"components":{"actors":[{"actor0":{"active":true,"static":false,"trans":{"pos":[0.0,0.0,0.0,0.0],"rot":[0.0,0.0,0.0,0.0],"sca":[1.0,1.0,1.0,0.0]}},"name":"actor0"}]},"use_thread":true},"name":"hi"}}
