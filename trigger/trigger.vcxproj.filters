@@ -19,9 +19,22 @@
     <Filter Include="헤더 파일\component">
       <UniqueIdentifier>{c9fd5e09-ea66-4b32-a791-441fc13bacf3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="헤더 파일\imgui">
+      <UniqueIdentifier>{f08a3466-1cdb-491e-a96b-3d29bf65d22f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\dx12">
+      <UniqueIdentifier>{466056bf-b1e9-49f5-b554-8c9f6c768754}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\game">
+      <UniqueIdentifier>{764d738c-68e4-45ea-841d-1ef341b6eac6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\tools">
+      <UniqueIdentifier>{4e0cb2c6-3d2a-4286-a5d1-7676cbdb2f83}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
+    <None Include="ClassDiagram.cd" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="component.h">
@@ -33,5 +46,139 @@
     <ClInclude Include="fsm.h">
       <Filter>헤더 파일\fsm</Filter>
     </ClInclude>
+    <ClInclude Include="imconfig.h">
+      <Filter>헤더 파일\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui.h">
+      <Filter>헤더 파일\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui_internal.h">
+      <Filter>헤더 파일\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imstb_rectpack.h">
+      <Filter>헤더 파일\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imstb_textedit.h">
+      <Filter>헤더 파일\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imstb_truetype.h">
+      <Filter>헤더 파일\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="texture.h">
+      <Filter>헤더 파일\dx12</Filter>
+    </ClInclude>
+    <ClInclude Include="UploadBuffer.h">
+      <Filter>헤더 파일\dx12</Filter>
+    </ClInclude>
+    <ClInclude Include="d3dApp.h">
+      <Filter>헤더 파일\dx12</Filter>
+    </ClInclude>
+    <ClInclude Include="d3dUtil.h">
+      <Filter>헤더 파일\dx12</Filter>
+    </ClInclude>
+    <ClInclude Include="d3dx12.h">
+      <Filter>헤더 파일\dx12</Filter>
+    </ClInclude>
+    <ClInclude Include="DDSTextureLoader.h">
+      <Filter>헤더 파일\dx12</Filter>
+    </ClInclude>
+    <ClInclude Include="FrameResource.h">
+      <Filter>헤더 파일\dx12</Filter>
+    </ClInclude>
+    <ClInclude Include="GameTimer.h">
+      <Filter>헤더 파일\dx12</Filter>
+    </ClInclude>
+    <ClInclude Include="GeometryGenerator.h">
+      <Filter>헤더 파일\dx12</Filter>
+    </ClInclude>
+    <ClInclude Include="MathHelper.h">
+      <Filter>헤더 파일\dx12</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui_impl_win32.h">
+      <Filter>헤더 파일\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui_impl_dx12.h">
+      <Filter>헤더 파일\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="actor.h">
+      <Filter>헤더 파일\game</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui_stl.h">
+      <Filter>헤더 파일\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="trigger_console.h">
+      <Filter>헤더 파일\game</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>헤더 파일\dx12</Filter>
+    </ClInclude>
+    <ClInclude Include="dirent.h">
+      <Filter>헤더 파일\tools</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGuiFileDialog.h">
+      <Filter>헤더 파일\tools</Filter>
+    </ClInclude>
+    <ClInclude Include="vec.h">
+      <Filter>헤더 파일\game</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer.h">
+      <Filter>헤더 파일\game</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="imgui.cpp">
+      <Filter>헤더 파일\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui_demo.cpp">
+      <Filter>헤더 파일\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui_draw.cpp">
+      <Filter>헤더 파일\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui_widgets.cpp">
+      <Filter>헤더 파일\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="CrateApp.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="d3dApp.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="d3dUtil.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="DDSTextureLoader.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="FrameResource.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="GameTimer.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="GeometryGenerator.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="MathHelper.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui_impl_win32.cpp">
+      <Filter>헤더 파일\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui_impl_dx12.cpp">
+      <Filter>헤더 파일\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui_stl.cpp">
+      <Filter>헤더 파일\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGuiFileDialog.cpp">
+      <Filter>헤더 파일\tools</Filter>
+    </ClCompile>
+    <ClCompile Include="vec.cpp">
+      <Filter>헤더 파일\game</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

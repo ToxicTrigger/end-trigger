@@ -1,204 +1,270 @@
 #pragma once
 #include <thread>
 #include <string>
-#include <vector>
+#include <list>
 #include "component.h"
 #include <iostream>
 #include <memory>
 
-/*
-	간단한 FSM 구현 
-	사용법 :
-		1. fsm 객체를 생성한다.
-		2. fsm::add_state() 로 state 를 추가 해준다.
-		3. fsm::link_state() 로 두 state 를 이어주는 링크를 만든다.
-		4. fsm::simulate() 를 호출하여 now_state 를 갱신한다.
-	
-	알아두어야 하는 것:
-		각 링크의 ops 가 0 일 때 다음 상태로 전이한다.
-		이 ops 를 제어하고 싶을 땐 fsm::change_link() 를 호출한다.
-		해당 함수는 두 state 를 이어주는 link 의 ops 를 제어할 수 있도록 한다.
-
-*/
-
-namespace fsm 
+namespace trigger
 {
-	class state
+	namespace fsm
 	{
-	public:
-		std::string name;
-		
-		inline state() noexcept
+		class state
 		{
-			this->name = "Unknown";
-		}
-
-		inline state(std::string name) noexcept
-		{
-			this->name = name;
-		}
-	};
-
-	class link
-	{
-	public:
-		state *cur;
-		state *next;
-		int ops;
-
-		inline link( ) noexcept
-		{
-			cur = nullptr;
-			next = nullptr;
-			ops = 1;
-		}
-
-		inline link(state *current, state *next): link()
-		{
-			this->cur = current;
-			this->next = next;
-		}
-
-	};
-
-	class map : public component
-	{
-	private:
-		state * now_state;
-		std::vector<state*> states;
-		std::vector<link*> links;
-
-	public:
-		inline map()
-		{
-			states = std::vector<state*>();
-			links = std::vector<link*>();
-			state *idle = new state("idle");
-			add_state(idle);
-			now_state = idle;
-		}
-
-		inline map(state *def_state) : map()
-		{
-			// inited state idle
-			add_state(def_state);
-			link *def = new link(now_state, def_state);
-			def->ops = 0;
-			links.push_back(def);
-		}
-
-		inline state* get_state(unsigned int index) const noexcept
-		{
-			if (index >= states.size()) return nullptr;
-			return states[index];
-		}
-
-		inline state* get_state(std::string name) const noexcept
-		{
-			for (auto i : states)
+			const std::string name;
+		public:
+			explicit inline state(const std::string name = "Unknown") noexcept : name(name)
 			{
-				if (i->name == name)
+
+			}
+
+			inline const std::string& get_name() const noexcept
+			{
+				return this->name;
+			}
+			virtual void begin_state()
+			{};
+			virtual void end_state()
+			{};
+			virtual void update(const float delta)
+			{};
+		};
+
+		class link
+		{
+		private:
+			std::unique_ptr<state> cur;
+			std::unique_ptr<state> next;
+			int ops;
+
+		public:
+			explicit inline link() noexcept
+			{
+				cur = nullptr;
+				next = nullptr;
+				ops = 1;
+			}
+
+			explicit inline link(const state *current, const state *next) : link()
+			{
+				this->cur._Myptr() = const_cast<state*>(current);
+				this->next._Myptr() = const_cast<state*>(next);
+			}
+
+			inline const state* get_current_state() const noexcept
+			{
+				return this->cur.get();
+			};
+			inline const state* get_next_state() const noexcept
+			{
+				return this->next.get();
+			};
+			inline constexpr const int& get_ops() const noexcept
+			{
+				return this->ops;
+			};
+			inline constexpr void set_ops(int op) noexcept
+			{
+				ops = op;
+			};
+		};
+
+		class map : public component
+		{
+		private:
+			std::unique_ptr<state> now_state;
+			std::list<state*> states;
+			std::list<link*> links;
+			std::string cur_name, now_name;
+
+			inline void simulate(float delta) noexcept
+			{
+				now_state->update(delta);
+				for(auto i : this->links)
 				{
-					return i;
+					cur_name = i->get_current_state()->get_name();
+					if(cur_name == now_name)
+					{
+						// ops == 0 , move now_state between link
+						if(i->get_ops() == 0)
+						{
+							i->set_ops(i->get_ops() + 1);
+							now_state->end_state();
+							now_state._Myptr() = const_cast<state*>(i->get_next_state());
+							now_state->begin_state();
+							now_name = now_state->get_name();
+							return;
+						}
+					}
 				}
 			}
-			return nullptr;
-		}
 
-		inline state* get_state(state *state) const
-		{
-			for (auto i : states)
+		public:
+			inline explicit map()
 			{
-				if (i == state) return i;
+				states = std::list<state*>();
+				links = std::list<link*>();
+
+				auto idle = new state("idle");
+				add_state(idle);
+				now_state = std::make_unique<state>(idle->get_name());
+				now_name = now_state->get_name();
 			}
-			return nullptr;
-		}
 
-		inline bool link_state(std::string state1, std::string state2) noexcept
-		{
-			state *a = get_state(state1);
-			state *b = get_state(state2);
-			if (a == nullptr || b == nullptr)
+			inline explicit map(state *def_state) : map()
 			{
+				// inited state idle
+				add_state(def_state);
+				link *def = new link(now_state.get(), def_state);
+				def->set_ops(0);
+				links.push_back(def);
+				now_name = now_state->get_name();
+			}
+
+			inline const state* const get_state(const std::string name) const noexcept
+			{
+				for(auto i : states)
+				{
+					if(i->get_name() == name)
+					{
+						return i;
+					}
+				}
+				return nullptr;
+			}
+
+			inline const state* const get_state(const state *state) const noexcept
+			{
+				for(auto i : states)
+				{
+					if(i == state) return i;
+				}
+				return nullptr;
+			}
+
+			inline bool link_state(const std::string state1, const std::string state2) noexcept
+			{
+				const state *a = get_state(state1);
+				if(a != nullptr)
+				{
+					const state *b = get_state(state2);
+					if(b != nullptr)
+					{
+						link *tmp = new link(a, b);
+						this->links.push_back(tmp);
+						return true;
+					}
+				}
 				return false;
 			}
-			link *tmp = new link(a, b);
-			this->links.push_back(tmp);
 
-			return true;
-		}
-
-		inline const state* get_now_state() const
-		{
-			return now_state;
-		}
-
-		inline void add_state(state *new_state) noexcept
-		{
-			if (new_state != nullptr)
+			inline const state& get_now_state() const noexcept
 			{
-				states.push_back(new_state);
+				return *now_state;
 			}
-		}
 
-		inline void add_state(std::string state_name) noexcept
-		{
-			state *tmp = new state(state_name);
-			states.push_back(tmp);
-		}
-
-		inline void simulate() noexcept
-		{
-			for (auto i : this->links)
+			inline constexpr void add_state(state *new_state) noexcept
 			{
-				if (i->cur->name == now_state->name)
+				if(new_state != nullptr)
 				{
-					// ops == 0 , move now_state between link
-					if (i->ops == 0)
-					{
-						i->ops += 1;
-						now_state = i->next;
-
-						return;
-					}
+					states.push_back(new_state);
 				}
 			}
-		}
 
-		inline bool change_link(std::string state1, std::string state2, unsigned int op) const noexcept
-		{
-			state *tmp = get_state(state1);
-			state *tmp2 = get_state(state2);
-			if (tmp != nullptr && tmp2 != nullptr)
+			inline const void add_state(const std::string state_name) noexcept
 			{
-				for (auto i : links)
+				if(get_state(state_name) != nullptr)
 				{
-					if (i->cur->name == tmp->name && i->next->name == tmp2->name)
+					state *tmp = new state(state_name);
+					states.push_back(tmp);
+				}
+			}
+
+			inline bool delete_state(state * state) noexcept
+			{
+				if(state != nullptr)
+				{
+					states.remove(state);
+					return true;
+				}
+				return false;
+			}
+
+			inline bool delete_state(std::string name) noexcept
+			{
+				if(delete_state(const_cast<state*>(get_state(name))))
+				{
+					return true;
+				}
+				return false;
+			}
+
+			inline const link* const get_link(std::string state1, std::string state2) const noexcept
+			{
+				const state *tmp = get_state(state1);
+				const state *tmp2 = get_state(state2);
+				if(tmp != nullptr && tmp2 != nullptr)
+				{
+					for(auto i : links)
 					{
-						i->ops = op;
+						if(i->get_current_state()->get_name() == tmp->get_name() && i->get_current_state()->get_name() == tmp2->get_name())
+						{
+							return i;
+						}
 					}
 				}
-				return true;
+				return nullptr;
 			}
-			return false;
-		}
 
-		void update(float delta) noexcept
-		{
-			simulate();
-		}
-
-		~map()
-		{
-			if (now_state != nullptr)
+			inline bool delete_link(std::string state1, std::string state2) noexcept
 			{
-				delete now_state;
+				auto t = get_link(state1, state2);
+				if(t != nullptr)
+				{
+					links.remove(const_cast<link*>(t));
+					return true;
+				}
+				return false;
 			}
 
-			states.clear();
-			links.clear();
-		}
+			inline bool change_link(std::string state1, std::string state2, unsigned int op) const noexcept
+			{
+				const state *tmp = get_state(state1);
+				const state *tmp2 = get_state(state2);
+				if(tmp != nullptr && tmp2 != nullptr)
+				{
+					for(auto i : links)
+					{
+						if(i->get_current_state()->get_name() == tmp->get_name()
+						   && i->get_next_state()->get_name() == tmp2->get_name())
+						{
+							i->set_ops(0);
+						}
+					}
+					return true;
+				}
+				return false;
+			}
 
-	};
+			inline void update(float delta) noexcept
+			{
+				simulate(delta);
+			}
 
+			~map()
+			{
+				if(now_state != nullptr)
+				{
+					now_state.release();
+				}
+
+				states.clear();
+				links.clear();
+			}
+
+		};
+	}
 }
+
+

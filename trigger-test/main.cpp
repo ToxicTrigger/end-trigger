@@ -5,10 +5,16 @@ using namespace std;
 
 auto main() -> int
 {
-	Miner *miner = new Miner();
-	component_world *world = new component_world(true);
-	world->add(miner);
+	auto start = std::chrono::high_resolution_clock::now();
+	auto map = new trigger::fsm::map();
 
+	start = std::chrono::high_resolution_clock::now();
+	for( int i = 0; i < 10000; ++i )
+	{
+		map->add_state( "Hello" );
+	}
+	cout << (std::chrono::high_resolution_clock::now() - start).count() << endl;
 	getchar();
+
 	return 0;
 }

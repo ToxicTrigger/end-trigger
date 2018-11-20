@@ -1,8 +1,14 @@
 #pragma once
+#include <string>
 
-class component
+namespace trigger
 {
-public:
-	bool active = true;
-	virtual void update(float delta) noexcept = 0;
-};
+	class component
+	{
+	public:
+		float time_scale = 1.0f;
+		bool active = true;
+		virtual void update(float delta) noexcept
+		{};
+	};
+}
