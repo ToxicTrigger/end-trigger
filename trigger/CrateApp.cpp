@@ -210,6 +210,8 @@ bool CrateApp::Initialize()
 	//mEyePos = XMFLOAT3(1, 1, 1);
 	cam.SetLens(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, 1000.0f);
 
+	console->AddLog(T_CLASS);
+	console->AddLog(T_METHOD);
 
 	LoadTextures();
 	BuildRootSignature();

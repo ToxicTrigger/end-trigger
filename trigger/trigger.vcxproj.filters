@@ -124,6 +124,9 @@
     <ClInclude Include="renderer.h">
       <Filter>헤더 파일\game</Filter>
     </ClInclude>
+    <ClInclude Include="trigger-tools.h">
+      <Filter>헤더 파일\tools</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="imgui.cpp">
