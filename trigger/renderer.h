@@ -7,7 +7,6 @@ public:
 	GeometryGenerator::MeshData mesh;
 	Material material;
 
-
 	void draw()
 	{
 
