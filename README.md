@@ -15,6 +15,7 @@ Trigger Engine 은 imgui 와 DX12 를 결합한 게임 엔진 입니다.
 | :-----: | :--------------------------------: |
 | master  |            Stable Build            |
 | Nightly |           Nightly Build            |
+|   test  |      Nightly Build unit test       |
 |  Toxic  | un-stable & nightly & current work |
 
 |    gitmoji     |          mean           |
