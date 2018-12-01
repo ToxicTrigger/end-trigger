@@ -185,7 +185,7 @@ namespace trigger
 				delta_time = chrono::duration_cast<chrono::duration<float>>(time::now() - t);
 			}
 		}
-
+		
 		//TODO
 		static bool save_world( string path, string name, component_world *world )
 		{
@@ -220,7 +220,7 @@ namespace trigger
 					actors[i->name]["static"] = i->is_static;
 					j["world"][w->name]["components"]["actors"] += actors;
 				}
-
+				
 				o << j;
 				o.close();
 			}, path, name, world
@@ -229,7 +229,7 @@ namespace trigger
 			lockd.unlock();
 			return true;
 		}
-
+		
 		//TODO
 		static inline component_world* load_world( string path )
 		{

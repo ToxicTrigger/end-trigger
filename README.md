@@ -1,4 +1,4 @@
-# Trigger Engine
+# Trigger Engine 
 
 ## [![Codacy Badge](https://api.codacy.com/project/badge/Grade/a1dc6b1d49334d82a047f052b49521ff)](https://www.codacy.com/app/ToxicTrigger/trigger?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ToxicTrigger/trigger&amp;utm_campaign=Badge_Grade)
 
@@ -6,7 +6,8 @@ Trigger Engine 은 imgui 와 DX12 를 결합한 게임 엔진 입니다.
 
 아래의 작업을 진행 중 입니다. 
 
-
+## Version
+>>[0.0.76](Unfortunate Zin)
 
 ## Work process?
 
@@ -14,6 +15,7 @@ Trigger Engine 은 imgui 와 DX12 를 결합한 게임 엔진 입니다.
 | :-----: | :--------------------------------: |
 | master  |            Stable Build            |
 | Nightly |           Nightly Build            |
+|   test  |      Nightly Build unit test       |
 |  Toxic  | un-stable & nightly & current work |
 
 |    gitmoji     |          mean           |
@@ -29,6 +31,7 @@ Trigger Engine 은 imgui 와 DX12 를 결합한 게임 엔진 입니다.
 
 - [ ] Attach Thread for All Engines Job ex) World Exporter & Editor & CPU DesHeap 
 - [ ] make Template Macro ex) TCLASS like UCLASS-unreal
+- [x] make Save Variable Data Like .. SAVE_VAR(var_name) :: -> component.h 
 - [ ] parse Lua or Python ) build Scriptable API for access Core API
 - [ ] Add Mesh Renderer 
 - [ ] Add Model importer
