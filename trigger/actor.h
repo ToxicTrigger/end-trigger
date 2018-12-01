@@ -29,12 +29,19 @@ namespace trigger
 			fsm.update( delta );
 		}
 
-		actor()
+		actor() : component()
 		{
-			name = "Actor";
 			s_transform.position = vec( 0, 0, 0 );
 			s_transform.rotation = vec( 0, 0, 0 );
 			s_transform.scale = vec( 1, 1, 1 );
+
+			//when that macro call in construtor, it working Initialized variable.
+			//so when new actor born and wake up, his name r "Actor".
+			SAVE_VAR_INIT(name, "Actor");
+			SAVE_VAR(s_transform.position.to_json());
+			SAVE_VAR(s_transform.rotation.to_json());
+			SAVE_VAR(s_transform.scale.to_json());
+
 			s_components = std::list<component>();
 		}
 
