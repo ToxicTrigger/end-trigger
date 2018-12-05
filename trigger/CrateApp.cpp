@@ -213,7 +213,7 @@ bool CrateApp::Initialize()
 	target = new trigger::actor();
 	console = new trigger::ui::console(selected_world);
 	//mEyePos = XMFLOAT3(1, 1, 1);
-	cam.SetLens(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, 1000.0f);
+	cam.SetLens(0.6f * MathHelper::Pi, 1.833f, 0.00001f, 1000.0f);
 
 	//test lua
 	trigger::tlua::init(console,this->selected_world);
@@ -245,6 +245,7 @@ void CrateApp::OnResize()
 	D3DApp::OnResize();
 
 	cam.SetLens(0.25f * MathHelper::Pi, AspectRatio(), 0.00001f, 1000.0f);
+	//cam.SetLens(0.6f * MathHelper::Pi, 1.83f, 0.00001f, 1000.0f);
 }
 
 float tick;
