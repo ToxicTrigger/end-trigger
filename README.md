@@ -2,9 +2,8 @@
 
 ## [![Codacy Badge](https://api.codacy.com/project/badge/Grade/a1dc6b1d49334d82a047f052b49521ff)](https://www.codacy.com/app/ToxicTrigger/trigger?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ToxicTrigger/trigger&amp;utm_campaign=Badge_Grade)
 
-```
-![](https://github.com/ToxicTrigger/trigger/blob/Toxic/trigger/lua/test_actor.lua){: width="50%" height="50%"}{: .center}
-```
+![](https://github.com/ToxicTrigger/trigger/blob/master/image/0.1.78.gif){: width="50%" height="50%"}{: .center}
+
 
 Trigger Engine 은 imgui 와 DX12 를 결합한 게임 엔진 입니다.
 
