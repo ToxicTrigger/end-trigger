@@ -32,7 +32,7 @@ Trigger Engine 은 imgui 와 DX12 를 결합한 게임 엔진 입니다.
 - [ ] Attach Thread for All Engines Job ex) World Exporter & Editor & CPU DesHeap 
 - [ ] make Template Macro ex) TCLASS like UCLASS-unreal
 - [x] make Save Variable Data Like .. SAVE_VAR(var_name) :: -> component.h 
-- [ ] parse Lua or Python ) build Scriptable API for access Core API
+- [ ] parse Lua + engine-side editor ) build Scriptable API for access Core API
 - [ ] Add Mesh Renderer 
 - [ ] Add Model importer
 - [ ] Add Path Finding 
