@@ -12,12 +12,6 @@
 #include "d3dUtil.h"
 #include "GameTimer.h"
 
-
-// Why????
-
-//#include "imgui_impl_dx12.h"
-// ???????
-
 // Link necessary d3d12 libraries.
 #pragma comment(lib,"d3dcompiler.lib")
 #pragma comment(lib, "D3D12.lib")
@@ -130,8 +124,8 @@ protected:
 	D3D_DRIVER_TYPE md3dDriverType = D3D_DRIVER_TYPE_HARDWARE;
     DXGI_FORMAT mBackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
     DXGI_FORMAT mDepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	int mClientWidth = 800;
-	int mClientHeight = 600;
+	int mClientWidth = 1280;
+	int mClientHeight = 800;
 
 	list<trigger::component_world*> worlds;
 	trigger::component_world *selected_world;

@@ -188,6 +188,7 @@ bool CrateApp::Initialize()
 	// Get the increment size of a descriptor in this heap type.  This is hardware specific, 
 	// so we have to query this information.
 	mCbvSrvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	trigger::tool::make_tex("../tools/512_untitled_texture.png");
 
 	//TEST
 	pos = new float[3];
@@ -238,12 +239,7 @@ void CrateApp::OnResize()
 {
 	D3DApp::OnResize();
 
-	cam.SetLens(0.6f * MathHelper::Pi, AspectRatio(), 1.0f, 1000.0f);
-
-	// The window resized, so update the aspect ratio and recompute the projection matrix.
-	//XMMATRIX P = XMMatrixPerspectiveFovLH(0.25f*MathHelper::Pi, AspectRatio(), 1.0f, 1000.0f);
-	//XMMATRIX P = cam.GetProj();
-	//XMStoreFloat4x4(&mProj, P);
+	cam.SetLens(0.25f * MathHelper::Pi, AspectRatio(), 0.00001f, 1000.0f);
 }
 
 void CrateApp::Update(const GameTimer& gt)
@@ -577,21 +573,21 @@ void CrateApp::LoadTextures()
 {
 	auto woodCrateTex = std::make_unique<Texture>();
 	woodCrateTex->Name = "woodCrateTex";
-	woodCrateTex->Filename = L"../tools/ui_heart_dot.DDS";
+	woodCrateTex->Filename = L"../tools/512_untitled_texture.DDS";
 	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(md3dDevice.Get(),
 		mCommandList.Get(), woodCrateTex->Filename.c_str(),
 		woodCrateTex->Resource, woodCrateTex->UploadHeap));
 
 	auto woodCrateTex1 = std::make_unique<Texture>();
 	woodCrateTex1->Name = "woodCrateTex1";
-	woodCrateTex1->Filename = L"../tools/ui_heart_dot.DDS";
+	woodCrateTex1->Filename = L"../tools/512_untitled_texture.DDS";
 	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(md3dDevice.Get(),
 		mCommandList.Get(), woodCrateTex1->Filename.c_str(),
 		woodCrateTex1->Resource, woodCrateTex1->UploadHeap));
 
 	auto woodCrateTex2 = std::make_unique<Texture>();
 	woodCrateTex2->Name = "woodCrateTex2";
-	woodCrateTex2->Filename = L"../tools/ui_heart_dot.DDS";
+	woodCrateTex2->Filename = L"../tools/512_untitled_texture.DDS";
 	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(md3dDevice.Get(),
 		mCommandList.Get(), woodCrateTex2->Filename.c_str(),
 		woodCrateTex2->Resource, woodCrateTex2->UploadHeap));

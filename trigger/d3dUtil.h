@@ -22,6 +22,7 @@
 
 #include <limits>
 #include "trigger-tools.h"
+#include "texture.h"
 
 #include "DDSTextureLoader.h"
 #include "MathHelper.h"

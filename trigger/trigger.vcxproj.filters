@@ -109,9 +109,6 @@
     <ClInclude Include="trigger_console.h">
       <Filter>헤더 파일\game</Filter>
     </ClInclude>
-    <ClInclude Include="Camera.h">
-      <Filter>헤더 파일\dx12</Filter>
-    </ClInclude>
     <ClInclude Include="dirent.h">
       <Filter>헤더 파일\tools</Filter>
     </ClInclude>
@@ -126,6 +123,9 @@
     </ClInclude>
     <ClInclude Include="trigger-tools.h">
       <Filter>헤더 파일\tools</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>헤더 파일\game</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

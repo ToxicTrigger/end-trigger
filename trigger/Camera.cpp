@@ -25,10 +25,27 @@ XMFLOAT3 Camera::GetPosition3f()const
 	return mPosition;
 }
 
+trigger::vec Camera::get_position() const
+{
+	return this->position;
+}
+
 void Camera::SetPosition(float x, float y, float z)
 {
 	mPosition = XMFLOAT3(x, y, z);
 	mViewDirty = true;
+}
+
+void Camera::set_position(float x, float y, float z)
+{
+	this->position.x = x;
+	this->position.y = y;
+	this->position.z = z;
+}
+
+void Camera::set_position(const trigger::vec vector)
+{
+	this->position = vector;
 }
 
 void Camera::SetPosition(const XMFLOAT3& v)

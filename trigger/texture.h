@@ -5,7 +5,7 @@
 
 namespace trigger
 {
-	namespace dx 
+	namespace tool
 	{
 		//TODO :: DirectX 에서 간단히 텍스처를 Load 할 수 있도록 하자
 		static inline void make_tex(std::string filename)
