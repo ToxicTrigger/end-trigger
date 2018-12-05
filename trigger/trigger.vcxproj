@@ -94,6 +94,7 @@
       <SubSystem>NotSet</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>D:\codes\trigger\tools\lua534;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -137,6 +138,7 @@
     <ClInclude Include="d3dx12.h" />
     <ClInclude Include="DDSTextureLoader.h" />
     <ClInclude Include="dirent.h" />
+    <ClInclude Include="filepath.h" />
     <ClInclude Include="FrameResource.h" />
     <ClInclude Include="fsm.h" />
     <ClInclude Include="GameTimer.h" />
@@ -154,10 +156,11 @@
     <ClInclude Include="MathHelper.h" />
     <ClInclude Include="renderer.h" />
     <ClInclude Include="texture.h" />
-    <ClInclude Include="trigger-tools.h" />
+    <ClInclude Include="trigger_tools.h" />
     <ClInclude Include="trigger_console.h" />
     <ClInclude Include="UploadBuffer.h" />
     <ClInclude Include="vec.h" />
+    <ClInclude Include="trigger_lua.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
@@ -177,6 +180,7 @@
     <ClCompile Include="imgui_stl.cpp" />
     <ClCompile Include="imgui_widgets.cpp" />
     <ClCompile Include="MathHelper.cpp" />
+    <ClCompile Include="trigger_lua.cpp" />
     <ClCompile Include="vec.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

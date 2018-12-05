@@ -120,10 +120,16 @@
     <ClInclude Include="renderer.h">
       <Filter>헤더 파일\game</Filter>
     </ClInclude>
-    <ClInclude Include="trigger-tools.h">
+    <ClInclude Include="Camera.h">
+      <Filter>헤더 파일\game</Filter>
+    </ClInclude>
+    <ClInclude Include="trigger_lua.h">
       <Filter>헤더 파일\tools</Filter>
     </ClInclude>
-    <ClInclude Include="Camera.h">
+    <ClInclude Include="trigger_tools.h">
+      <Filter>헤더 파일\tools</Filter>
+    </ClInclude>
+    <ClInclude Include="filepath.h">
       <Filter>헤더 파일\game</Filter>
     </ClInclude>
   </ItemGroup>
@@ -181,6 +187,9 @@
     </ClCompile>
     <ClCompile Include="vec.cpp">
       <Filter>헤더 파일\game</Filter>
+    </ClCompile>
+    <ClCompile Include="trigger_lua.cpp">
+      <Filter>헤더 파일\tools</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -19,25 +19,25 @@
 #include <sstream>
 #include <cassert>
 #include <tchar.h>
-
 #include <limits>
-#include "trigger-tools.h"
-#include "texture.h"
 
-#include "DDSTextureLoader.h"
-#include "MathHelper.h"
-
-#include "vec.h"
 #include "imgui.h"
 #include "imgui_impl_win32.h"
 #include "imgui_impl_dx12.h"
 #include "imgui_stl.h"
-#include "component_world.h"
-#include "actor.h"
-#include "trigger_console.h"
-#include "Camera.h"
 #include "ImGuiFileDialog.h"
+#include "trigger_tools.h"
+#include "trigger_console.h"
+#include "texture.h"
+#include "DDSTextureLoader.h"
+#include "MathHelper.h"
+#include "vec.h"
+#include "Camera.h"
 #include "GeometryGenerator.h"
+#include "component_world.h"
+#include "trigger_lua.h"
+#include "actor.h"
+
 
 extern const int gNumFrameResources;
 

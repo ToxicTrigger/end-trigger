@@ -6,8 +6,10 @@ Trigger Engine 은 imgui 와 DX12 를 결합한 게임 엔진 입니다.
 
 아래의 작업을 진행 중 입니다. 
 
+
+
 ## Version
->>[0.0.76](Unfortunate Zin)
+>>[0.1.79](Unfortunate Orge)
 
 ## Work process?
 
@@ -33,6 +35,8 @@ Trigger Engine 은 imgui 와 DX12 를 결합한 게임 엔진 입니다.
 - [ ] make Template Macro ex) TCLASS like UCLASS-unreal
 - [x] make Save Variable Data Like .. SAVE_VAR(var_name) :: -> component.h 
 - [ ] parse Lua + engine-side editor ) build Scriptable API for access Core API
+- [ ] make Default Lua Template :: -> trigger_lua.h & trigger/lua/lua_default
+- [ ] Game Control Api for Lua Like .. move( actor , vec(0, 1, 0) * moveSpeed * deltaTime ) & rotation( actor , vec(0, 1, 0) * deltaTime )
 - [ ] Add Mesh Renderer 
 - [ ] Add Model importer
 - [ ] Add Path Finding 

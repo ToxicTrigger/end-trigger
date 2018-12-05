@@ -8,6 +8,8 @@
 #include "GeometryGenerator.h"
 #include "FrameResource.h"
 
+#include "trigger_lua.h"
+
 using Microsoft::WRL::ComPtr;
 using namespace DirectX;
 using namespace DirectX::PackedVector;
@@ -77,6 +79,8 @@ private:
 	void UpdateObjectCBs(const GameTimer& gt);
 	void UpdateMaterialCBs(const GameTimer& gt);
 	void UpdateMainPassCB(const GameTimer& gt);
+
+	void BuildProperty(trigger::component *comp);
 
 	void LoadTextures();
 	void BuildRootSignature();
@@ -211,8 +215,9 @@ bool CrateApp::Initialize()
 	//mEyePos = XMFLOAT3(1, 1, 1);
 	cam.SetLens(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, 1000.0f);
 
-	console->AddLog(T_CLASS);
-	console->AddLog(T_METHOD);
+	//test lua
+	trigger::tlua::init(console,this->selected_world);
+	trigger::tlua::run("lua/test_actor.lua");
 
 	LoadTextures();
 	BuildRootSignature();
@@ -242,6 +247,7 @@ void CrateApp::OnResize()
 	cam.SetLens(0.25f * MathHelper::Pi, AspectRatio(), 0.00001f, 1000.0f);
 }
 
+float tick;
 void CrateApp::Update(const GameTimer& gt)
 {
 	UpdateCamera(gt);
@@ -264,6 +270,16 @@ void CrateApp::Update(const GameTimer& gt)
 	UpdateObjectCBs(gt);
 	UpdateMaterialCBs(gt);
 	UpdateMainPassCB(gt);
+
+	if (tick <= 1.0f)
+	{
+		tick += gt.DeltaTime();
+	}
+	else
+	{
+		tick = 0;
+		trigger::tlua::_load_update_func(gt.DeltaTime());
+	}
 }
 
 
@@ -568,6 +584,8 @@ void CrateApp::UpdateMainPassCB(const GameTimer& gt)
 	auto currPassCB = mCurrFrameResource->PassCB.get();
 	currPassCB->CopyData(0, mMainPassCB);
 }
+
+
 
 void CrateApp::LoadTextures()
 {
@@ -947,6 +965,18 @@ void CrateApp::BuildRenderItems()
 		mOpaqueRitems.push_back(e.get());
 }
 
+//TODO
+void CrateApp::BuildProperty(trigger::component * comp)
+{
+	for (auto& j : comp->get_variables())
+	{
+		if (j.is_number_float())
+		{
+			ImGui::Separator();
+			ImGui::InputFloat(comp->class_name.c_str(), &comp->time_scale);
+		}
+	}
+}
 void CrateApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderItem*>& ritems)
 {
 
@@ -1088,6 +1118,10 @@ void CrateApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::ve
 	{
 		if (ImGui::BeginMenu("Action"))
 		{
+			if (ImGui::MenuItem("Reload Lua"))
+			{
+				trigger::tlua::run("lua/test_actor.lua");
+			}
 			if (ImGui::MenuItem("Save"))
 			{
 				//TODO 현재 열린 맵 저장하기!
@@ -1187,6 +1221,7 @@ void CrateApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::ve
 				{
 					if (selected_world->delete_component(target))
 					{
+						trigger::tlua::_load_destroy_func();
 						console->AddLog("[log] %s is Deleted in World!", target->name.c_str());
 					}
 					else
@@ -1238,6 +1273,7 @@ void CrateApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::ve
 				ImGui::InputFloat("D", &target->s_transform.scale.z);
 				ImGui::Separator();
 			}
+			BuildProperty(target);
 			//drawGui() <- component On State
 
 		}
