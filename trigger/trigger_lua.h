@@ -242,6 +242,9 @@ namespace trigger
 				lua_register(L, "t_print", t_print);
 				lua_register(L, "t_rotation", t_rotation);
 				lua_register(L, "t_set_rotation", t_set_rotation);
+				lua_register(L, "t_set_scale", t_set_scale);
+				lua_register(L, "t_set_position", t_set_position);
+				lua_register(L, "t_move", t_move);
 			}
 
 			is_inited = true;
@@ -294,6 +297,7 @@ namespace trigger
 			lua_pushstring(L, name);
 			return 0;
 		}
+
 		//set rotate actor
 		static int t_set_rotation(lua_State *L)
 		{
@@ -301,9 +305,73 @@ namespace trigger
 			float x = (float)(lua_tonumber(L, 2));
 			float y = (float)lua_tonumber(L, 3);
 			float z = (float)lua_tonumber(L, 4);
-			tlua::target->s_transform.rotation.x = x;
-			tlua::target->s_transform.rotation.y = y;
-			tlua::target->s_transform.rotation.z = z;
+			auto actors = tlua::world->get_components <trigger::actor>();
+			for (auto a : actors)
+			{
+				if (a->name.compare(name) == 0)
+				{
+					a->s_transform.rotation.x += x;
+					a->s_transform.rotation.y += y;
+					a->s_transform.rotation.z += z;
+				}
+			}
+			return 0;
+		}
+
+		static int t_set_position(lua_State *L)
+		{
+			std::string name = lua_tostring(L, 1);
+			float x = (float)(lua_tonumber(L, 2));
+			float y = (float)lua_tonumber(L, 3);
+			float z = (float)lua_tonumber(L, 4);
+			auto actors = tlua::world->get_components <trigger::actor>();
+			for (auto a : actors)
+			{
+				if (a->name.compare(name) == 0)
+				{
+					a->s_transform.position.x = x;
+					a->s_transform.position.y = y;
+					a->s_transform.position.z = z;
+				}
+			}
+			return 0;
+		}
+
+		static int t_move(lua_State *L)
+		{
+			std::string name = lua_tostring(L, 1);
+			float x = (float)(lua_tonumber(L, 2));
+			float y = (float)lua_tonumber(L, 3);
+			float z = (float)lua_tonumber(L, 4);
+			auto actors = tlua::world->get_components <trigger::actor>();
+			for (auto a : actors)
+			{
+				if (a->name.compare(name) == 0)
+				{
+					a->s_transform.position.x += x;
+					a->s_transform.position.y += y;
+					a->s_transform.position.z += z;
+				}
+			}
+			return 0;
+		}
+
+		static int t_set_scale(lua_State *L)
+		{
+			std::string name = lua_tostring(L, 1);
+			float x = (float)(lua_tonumber(L, 2));
+			float y = (float)lua_tonumber(L, 3);
+			float z = (float)lua_tonumber(L, 4);
+			auto actors = tlua::world->get_components <trigger::actor>();
+			for (auto a : actors)
+			{
+				if (a->name.compare(name) == 0)
+				{
+					a->s_transform.scale.x = x;
+					a->s_transform.scale.y = y;
+					a->s_transform.scale.z = z;
+				}
+			}
 			return 0;
 		}
 
@@ -314,9 +382,16 @@ namespace trigger
 			float x = (float)(lua_tonumber(L, 2));
 			float y = (float)lua_tonumber(L, 3);
 			float z = (float)lua_tonumber(L, 4);
-			tlua::target->s_transform.rotation.x += x;
-			tlua::target->s_transform.rotation.y += y;
-			tlua::target->s_transform.rotation.z += z;
+			auto actors = tlua::world->get_components <trigger::actor>();
+			for (auto a : actors)
+			{
+				if (a->name.compare(name) == 0)
+				{
+					a->s_transform.rotation.x += x;
+					a->s_transform.rotation.y += y;
+					a->s_transform.rotation.z += z;
+				}
+			}
 			return 0;
 		}
 	};
