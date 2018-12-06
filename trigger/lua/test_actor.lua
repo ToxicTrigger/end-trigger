@@ -9,12 +9,10 @@
 -- t_print("message")
 
 function init() --init lua
-	t_set_scale("actor0", 1, 1, 1)
-	t_set_rotation("actor0", 0, 0, 0)
-	t_print("init done")
 end
 
 function update(delta) --Update every frame
+	t_rotation("actor0", 0 ,1 * delta, 0)
 end
 
 function destroy() --When Destroy
