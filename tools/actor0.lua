@@ -9,7 +9,6 @@ function init() --init lua
 end
 
 function update(delta) --Update every frame
-	t_rotation("actor0", 1 * delta, 0, 0)
 end
 
 function destroy() --When Destroy

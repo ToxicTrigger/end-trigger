@@ -129,5 +129,8 @@ protected:
 
 	list<trigger::component_world*> worlds;
 	trigger::component_world *selected_world;
+	trigger::actor *target;
+	bool console_open;
+	trigger::ui::console *console;
 };
 

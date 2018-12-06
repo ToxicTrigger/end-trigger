@@ -22,7 +22,7 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{BB72B1F7-93D1-4105-9A18-0EE92175F991}</ProjectGuid>
     <RootNamespace>trigger</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -88,12 +88,13 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>false</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\Users\308-18\Desktop\too\trigger\tools\lua534\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalDependencies>d3d12.lib;d3dcompiler.lib;dxgi.lib;lua53.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>NotSet</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>D:\codes\trigger\tools\lua534;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Users\308-18\Desktop\too\trigger\tools\lua534;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
@@ -155,6 +156,7 @@
     <ClInclude Include="imstb_truetype.h" />
     <ClInclude Include="MathHelper.h" />
     <ClInclude Include="renderer.h" />
+    <ClInclude Include="TextEditor.h" />
     <ClInclude Include="texture.h" />
     <ClInclude Include="trigger_tools.h" />
     <ClInclude Include="trigger_console.h" />
@@ -180,6 +182,7 @@
     <ClCompile Include="imgui_stl.cpp" />
     <ClCompile Include="imgui_widgets.cpp" />
     <ClCompile Include="MathHelper.cpp" />
+    <ClCompile Include="TextEditor.cpp" />
     <ClCompile Include="trigger_lua.cpp" />
     <ClCompile Include="vec.cpp" />
   </ItemGroup>

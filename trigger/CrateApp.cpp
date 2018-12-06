@@ -136,15 +136,8 @@ private:
 	float * pos;
 	float * rot;
 	float * scale;
-	trigger::actor *target;
-
-	bool console_open;
-	trigger::ui::console *console;
-
-	float h = 0, v = 0;
-
 	Camera cam;
-
+	float h = 0, v = 0;
 	POINT mLastMousePos;
 };
 
@@ -216,7 +209,7 @@ bool CrateApp::Initialize()
 	cam.SetLens(0.6f * MathHelper::Pi, 1.833f, 0.00001f, 1000.0f);
 
 	//test lua
-	trigger::tlua::init(console,this->selected_world);
+	trigger::tlua::init(console,this->selected_world, this->target);
 	trigger::tlua::run("lua/test_actor.lua");
 
 	LoadTextures();
@@ -272,15 +265,7 @@ void CrateApp::Update(const GameTimer& gt)
 	UpdateMaterialCBs(gt);
 	UpdateMainPassCB(gt);
 
-	if (tick <= 1.0f)
-	{
-		tick += gt.DeltaTime();
-	}
-	else
-	{
-		tick = 0;
-		trigger::tlua::_load_update_func(gt.DeltaTime());
-	}
+	trigger::tlua::_load_update_func(gt.DeltaTime());
 }
 
 
@@ -388,14 +373,6 @@ void CrateApp::OnMouseMove(WPARAM btnState, int x, int y)
 
 		cam.Pitch(dy);
 		cam.RotateY(dx);
-		//console.AddLog("[log] %f, %f", dx, dy);
-		// Update angles based on input to orbit camera around box.
-		//mTheta += dx;
-		//mPhi += dy;
-
-		// Restrict the angle mPhi.
-		//mPhi = MathHelper::Clamp(mPhi, 0.1f, MathHelper::Pi - 0.1f);
-		//OnKeyboardInput( btnState );
 	}
 
 	mLastMousePos.x = x;
@@ -1014,6 +991,9 @@ void CrateApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::ve
 	static bool openFileSaveDialog = false;
 	static bool openFileLoadDialog = false;
 	static bool openWorldNameChange = false;
+	static bool openLuaSaveDialog = false;
+	static bool openLuaLoadDialog = false;
+	static bool openLuaEditor = false;
 	static string world_name;
 	//Draw Gui
 	ImGui_ImplDX12_NewFrame();
@@ -1026,6 +1006,42 @@ void CrateApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::ve
 		ImGui::InputText(":World Name", &world_name);
 		selected_world->set_name(world_name);
 		ImGui::End();
+	}
+
+	if (openLuaEditor)
+	{
+		trigger::tlua::open_lua_editor(path + "/" + name, &openLuaEditor);
+	}
+
+	if (openLuaSaveDialog)
+	{
+		if (ImGuiFileDialog::Instance()->FileDialog("Save File", (const char*)".lua", ".", target->name.c_str()))
+		{
+			if (ImGuiFileDialog::Instance()->IsOk == true)
+			{
+				name = ImGuiFileDialog::Instance()->GetCurrentFileName();
+				if (name.find(".lua", 0) == std::string::npos)
+				{
+					name += ".lua";
+				}
+				path = ImGuiFileDialog::Instance()->GetCurrentPath();
+				if (trigger::tlua::save_default_lua_file(path+"/"+name))
+				{
+					console->AddLog("[log] Save Lua File, %s, %s", path.c_str(), name.c_str());
+					openLuaEditor = true;
+				}
+				else
+				{
+					console->AddLog("[error] Save Failed Lua File, %s, %s", path.c_str(), name.c_str());
+				}
+			}
+			else
+			{
+				path = "";
+				name = "";
+			}
+			openLuaSaveDialog = false;
+		}
 	}
 
 	if (openFileSaveDialog)
@@ -1207,7 +1223,6 @@ void CrateApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::ve
 			}
 			ImGui::TreePop();
 		}
-
 	}
 
 	ImGui::End();
@@ -1218,6 +1233,10 @@ void CrateApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::ve
 		{
 			if (ImGui::BeginMenu("Actions", "some Action for this Object"))
 			{
+				if (ImGui::MenuItem("Add Lua"))
+				{
+					openLuaSaveDialog = true;
+				}
 				if (ImGui::MenuItem("delete"))
 				{
 					if (selected_world->delete_component(target))
