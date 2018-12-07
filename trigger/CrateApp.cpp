@@ -946,14 +946,6 @@ void CrateApp::BuildRenderItems()
 //TODO
 void CrateApp::BuildProperty(trigger::component * comp)
 {
-	for (auto& j : comp->get_variables())
-	{
-		if (j.is_number_float())
-		{
-			ImGui::Separator();
-			ImGui::InputFloat(comp->class_name.c_str(), &comp->time_scale);
-		}
-	}
 }
 void CrateApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderItem*>& ritems)
 {

@@ -32,7 +32,6 @@ namespace trigger
 
 		static bool is_inited;
 		static lua_State *L;
-		static trigger::ui::console *cmd;
 		static trigger::component_world *world;
 		static trigger::actor *target;
 		static TextEditor edit;
@@ -42,6 +41,7 @@ namespace trigger
 		static bool close;
 
 	public:
+		static trigger::ui::console *cmd;
 		static bool open_lua_editor(std::string path, bool* window)
 		{
 			if (!tlua::path.compare(path))

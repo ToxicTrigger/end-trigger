@@ -1,0 +1,56 @@
+[setting]
+	use_thread = true
+	gravity = -9.8000001907348633
+	type = "map"
+	name = "Sweet Home"
+	[setting."trigger::component_world"]
+		[setting."trigger::component_world"."trigger::component"]
+			time_scale = ["float", "1"]
+			active = ["bool", "1"]
+["Sweet Home"]
+	["Sweet Home".heejin]
+		["Sweet Home".heejin."trigger::component"]
+			time_scale = ["float", "1"]
+			active = ["bool", "1"]
+			name = ["std::string", ""]
+			["Sweet Home".heejin."trigger::component".rotation]
+				["Sweet Home".heejin."trigger::component".rotation."trigger::vec"]
+					x = 0.00000000000000000
+					y = 0.00000000000000000
+					z = 0.00000000000000000
+					w = 0.00000000000000000
+			["Sweet Home".heejin."trigger::component".position]
+				["Sweet Home".heejin."trigger::component".position."trigger::vec"]
+					x = 0.00000000000000000
+					y = 0.00000000000000000
+					z = 0.00000000000000000
+					w = 0.00000000000000000
+			["Sweet Home".heejin."trigger::component".scale]
+				["Sweet Home".heejin."trigger::component".scale."trigger::vec"]
+					x = 1.0000000000000000
+					y = 1.0000000000000000
+					z = 1.0000000000000000
+					w = 0.00000000000000000
+	["Sweet Home".syha]
+		["Sweet Home".syha."trigger::component"]
+			time_scale = ["float", "1"]
+			active = ["bool", "1"]
+			name = ["std::string", ""]
+			["Sweet Home".syha."trigger::component".rotation]
+				["Sweet Home".syha."trigger::component".rotation."trigger::vec"]
+					x = 0.00000000000000000
+					y = 0.00000000000000000
+					z = 0.00000000000000000
+					w = 0.00000000000000000
+			["Sweet Home".syha."trigger::component".position]
+				["Sweet Home".syha."trigger::component".position."trigger::vec"]
+					x = 0.00000000000000000
+					y = 0.00000000000000000
+					z = 0.00000000000000000
+					w = 0.00000000000000000
+			["Sweet Home".syha."trigger::component".scale]
+				["Sweet Home".syha."trigger::component".scale."trigger::vec"]
+					x = 1.0000000000000000
+					y = 1.0000000000000000
+					z = 1.0000000000000000
+					w = 0.00000000000000000

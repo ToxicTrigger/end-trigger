@@ -1,9 +1,7 @@
 #pragma once
 #include <string>
 #include <memory>
-#include "../json/single_include/nlohmann/json.hpp"
 
-using json = nlohmann::json;
 
 #define T_METHOD methodName(__FUNCTION__).c_str()
 #define T_CLASS className(__FUNCTION__).c_str()

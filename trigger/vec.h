@@ -1,6 +1,6 @@
 #pragma once
 #include <cmath>
-#include "../json/single_include/nlohmann/json.hpp"
+#include "cpptoml.h"
 
 namespace trigger
 {
@@ -125,19 +125,30 @@ namespace trigger
 			return *this;
 		}
 
-		nlohmann::json to_json()
+		static vec* parse(std::shared_ptr<cpptoml::table> data)
 		{
-			nlohmann::json j;
-			j["x"] = x;
-			j["y"] = y;
-			j["z"] = z;
-			j["w"] = w;
-			return j;
+			vec *re = new vec();
+			auto x = data->get_as<double>("x");
+			auto y = data->get_as<double>("y");
+			auto z = data->get_as<double>("w");
+			auto w = data->get_as<double>("z");
+			re->x = (float)x.value_or(0.0f);
+			re->y = (float)y.value_or(0.0f);
+			re->z = (float)z.value_or(0.0f);
+			re->w = (float)w.value_or(0.0f);
+			return re;
 		}
 
-		static vec parse_json(const nlohmann::json v)
+		auto to_toml()
 		{
-			return vec(v["x"], v["y"], v["z"], v["w"]);
+			auto t = cpptoml::make_table();
+			auto v = cpptoml::make_table();
+			v->insert("x", x);
+			v->insert("y", y);
+			v->insert("z", z);
+			v->insert("w", w);
+			t->insert("trigger::vec", v);
+			return t;
 		}
 
 		vec inverse()const { return -(*this); }

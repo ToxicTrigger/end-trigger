@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include "trigger_tools.h"
-#include "../json/single_include/nlohmann/json.hpp"
+#include "cpptoml.h"
 
 //TODO:: Add using macro in import * export component_world's code. 
 
@@ -12,34 +12,51 @@
 // so that list can be import & export names value like {"type", "value"}
 // name = value name
 // value = name's value
-#define SAVE_VAR(var_name) _vars[T_CLASS][#var_name] = {typeid(var_name).name() , var_name };
-#define SAVE_VAR_INIT(var_name, var) var_name = var; SAVE_VAR(var_name);
+#define SAVE_VAR(type, var_name) \
+{\
+auto tmp = cpptoml::make_array(); \
+tmp->push_back(std::string(#type)); \
+std::ostringstream ss;\
+ss << var_name;\
+tmp->push_back(std::string(ss.str()));\
+_tmp->insert(#var_name, tmp);\
+}
 
+#define SAVE_TOML(var_name, var) \
+{\
+_tmp->insert(#var_name, var);\
+}
+
+#define SAVE_VAR_INIT(type, var_name, var) var_name = var; SAVE_VAR(type, var_name);
 
 namespace trigger
 {
 	class component
 	{
-		using json = nlohmann::json;
 	protected:
-		json _vars;
-
+		std::shared_ptr<cpptoml::table> _params;
+		std::shared_ptr<cpptoml::table> _tmp;
 	public:
-		component()
-		{
-			SAVE_VAR(time_scale);
-			SAVE_VAR(active);
-			class_name = (T_CLASS);
-		}
-
-		json get_variables()
-		{
-			return _vars;
-		}
-
-		std::string class_name;
 		float time_scale = 1.0f;
 		bool active = true;
+
+		component()
+		{
+			_tmp = cpptoml::make_table();
+			_params = cpptoml::make_table();
+			
+			SAVE_VAR(float , time_scale);
+			SAVE_VAR(bool, active);
+
+			_params->insert(T_CLASS, _tmp);
+		}
+
+		auto get_params()->decltype(_params) 
+		{
+			return _params;
+		}
+
+
 		virtual void update(float delta) noexcept
 		{};
 	};
