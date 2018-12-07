@@ -79,5 +79,4 @@ Thanks to
 - ImGuiColorTextEdit https://github.com/BalazsJako/ImGuiColorTextEdit
 - ImGuiFileDialog  https://github.com/aiekick/ImGuiFileDialog
 - ImGui https://github.com/ocornut/imgui
-- Json https://github.com/nlohmann/json
 - cpptoml https://github.com/skystrife/cpptoml
