@@ -4,7 +4,7 @@
 
 
 ## Version
->>[0.1.89](Unfortunate Orge) Lua Binding
+>>[0.1.89](Unfortunate Orge) Lua Editor
 >>![](https://github.com/ToxicTrigger/trigger/blob/Toxic/image/0.1.89.gif)
 
 Trigger Engine 은 imgui 와 DX12 를 결합한 게임 엔진 입니다.
@@ -76,7 +76,8 @@ Trigger Engine 은 imgui 와 DX12 를 결합한 게임 엔진 입니다.
 
 
 Thanks to
-
+- ImGuiColorTextEdit https://github.com/BalazsJako/ImGuiColorTextEdit
 - ImGuiFileDialog  https://github.com/aiekick/ImGuiFileDialog
 - ImGui https://github.com/ocornut/imgui
 - Json https://github.com/nlohmann/json
+- cpptoml https://github.com/skystrife/cpptoml
