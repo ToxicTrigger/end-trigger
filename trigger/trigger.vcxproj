@@ -134,6 +134,7 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="component.h" />
     <ClInclude Include="component_world.h" />
+    <ClInclude Include="cpptoml.h" />
     <ClInclude Include="d3dApp.h" />
     <ClInclude Include="d3dUtil.h" />
     <ClInclude Include="d3dx12.h" />

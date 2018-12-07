@@ -39,10 +39,9 @@ namespace trigger
 
 			//when that macro call in construtor, it working Initialized variable.
 			//so when new actor born and wake up, his name r "Actor".
-			SAVE_VAR_INIT(name, name.c_str());
-			SAVE_VAR(s_transform.position.to_json());
-			SAVE_VAR(s_transform.rotation.to_json());
-			SAVE_VAR(s_transform.scale.to_json());
+			SAVE_TOML(position, s_transform.position.to_toml());
+			SAVE_TOML(rotation, s_transform.rotation.to_toml());
+			SAVE_TOML(scale, s_transform.scale.to_toml());
 
 			s_components = std::list<component>();
 		}

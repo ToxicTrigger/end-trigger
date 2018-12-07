@@ -1,9 +1,9 @@
 [submodule "imgui"]
 	path = imgui
 	url = https://github.com/ocornut/imgui
-[submodule "json"]
-	path = json
-	url = https://github.com/nlohmann/json.git
 [submodule "ImGuiColorTextEdit"]
 	path = ImGuiColorTextEdit
 	url = https://github.com/BalazsJako/ImGuiColorTextEdit.git
+[submodule "cpptoml"]
+	path = cpptoml
+	url = https://github.com/skystrife/cpptoml.git
