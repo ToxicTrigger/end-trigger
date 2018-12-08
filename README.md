@@ -54,6 +54,8 @@ Trigger Engine 은 imgui 와 DX12 를 결합한 게임 엔진 입니다.
 - [ ] Add View debugger.
 - [ ] Make it Buildable
 - [ ] Dynamic Lighting like Day->Night 
+- [ ] FSM , Animation  node Editor -> like BluePrint
+- [ ] Use new Imgui Dock
 
 
 

@@ -1,10 +1,21 @@
 #pragma once
 #include <string>
 #include <memory>
-
+#include "imgui.h"
 
 #define T_METHOD methodName(__FUNCTION__).c_str()
 #define T_CLASS className(__FUNCTION__).c_str()
+
+#define ASSERT(expr, msg, add) \
+static bool click = false;\
+if( !expr && !click ) \
+{\
+ImGui::Begin("Error");\
+ImGui::TextColored(ImVec4(0.8f, 0.3f, 0.4f, 1.0f), msg, add);\
+if(ImGui::ColorButton("Close", ImVec4(0.5f, 0.4f, 0.2f, 1.0f)))\
+click = true;\
+ImGui::End();\
+}
 
 inline std::string methodName(const std::string& prettyFunction)
 {

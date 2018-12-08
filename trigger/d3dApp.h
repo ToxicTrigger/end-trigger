@@ -126,6 +126,11 @@ protected:
     DXGI_FORMAT mDepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 	int mClientWidth = 1280;
 	int mClientHeight = 800;
+	float FPS = 60.0f;
+	DWORD elapsedTicks = 0;
+	DWORD currentTicks = 0;
+	DWORD interval = (float)(1000/FPS);
+
 
 	list<trigger::component_world*> worlds;
 	trigger::component_world *selected_world;

@@ -26,7 +26,7 @@ namespace trigger
 		trigger::fsm::map fsm;
 		std::list<component> s_components;
 		
-		void update( float delta ) noexcept override
+		virtual void update( float delta ) noexcept override
 		{
 			fsm.update( delta );
 		}

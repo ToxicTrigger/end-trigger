@@ -186,6 +186,7 @@ bool CrateApp::Initialize()
 	// so we have to query this information.
 	mCbvSrvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	trigger::tool::make_tex("../tools/512_untitled_texture.png");
+	trigger::tool::make_tex("../tools/ui_heart_dot.png");
 
 	//TEST
 	pos = new float[3];
@@ -264,6 +265,7 @@ void CrateApp::Update(const GameTimer& gt)
 	UpdateObjectCBs(gt);
 	UpdateMaterialCBs(gt);
 	UpdateMainPassCB(gt);
+
 
 	trigger::tlua::_load_update_func(gt.DeltaTime());
 }
@@ -569,7 +571,7 @@ void CrateApp::LoadTextures()
 {
 	auto woodCrateTex = std::make_unique<Texture>();
 	woodCrateTex->Name = "woodCrateTex";
-	woodCrateTex->Filename = L"../tools/512_untitled_texture.DDS";
+	woodCrateTex->Filename = L"../tools/ui_heart_dot.DDS";
 	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(md3dDevice.Get(),
 		mCommandList.Get(), woodCrateTex->Filename.c_str(),
 		woodCrateTex->Resource, woodCrateTex->UploadHeap));
@@ -827,7 +829,19 @@ void CrateApp::BuildPSOs()
 		mShaders["opaquePS"]->GetBufferSize()
 	};
 	opaquePsoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	
 	opaquePsoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+	{
+		opaquePsoDesc.BlendState.RenderTarget[0].BlendEnable = true;
+		opaquePsoDesc.BlendState.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+		opaquePsoDesc.BlendState.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+		opaquePsoDesc.BlendState.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+		opaquePsoDesc.BlendState.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+		opaquePsoDesc.BlendState.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
+		opaquePsoDesc.BlendState.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+		opaquePsoDesc.BlendState.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+	}
+
 	opaquePsoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
 	opaquePsoDesc.SampleMask = UINT_MAX;
 	opaquePsoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
@@ -837,6 +851,7 @@ void CrateApp::BuildPSOs()
 	opaquePsoDesc.SampleDesc.Quality = m4xMsaaState ? (m4xMsaaQuality - 1) : 0;
 	opaquePsoDesc.DSVFormat = mDepthStencilFormat;
 	ThrowIfFailed(md3dDevice->CreateGraphicsPipelineState(&opaquePsoDesc, IID_PPV_ARGS(&mOpaquePSO)));
+
 }
 
 void CrateApp::BuildFrameResources()
@@ -1038,7 +1053,7 @@ void CrateApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::ve
 
 	if (openFileSaveDialog)
 	{
-		if (ImGuiFileDialog::Instance()->FileDialog("Save File", (const char*)0, ".", selected_world->get_name().c_str()))
+		if (ImGuiFileDialog::Instance()->FileDialog("Save File", (const char*)".map", ".", selected_world->get_name().c_str()))
 		{
 			if (ImGuiFileDialog::Instance()->IsOk == true)
 			{
@@ -1068,7 +1083,7 @@ void CrateApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::ve
 
 	if (openFileLoadDialog)
 	{
-		if (ImGuiFileDialog::Instance()->FileDialog("Load File", (const char*)0, ".", selected_world->get_name().c_str()))
+		if (ImGuiFileDialog::Instance()->FileDialog("Load File", (const char*)".map", ".", selected_world->get_name().c_str()))
 		{
 			if (ImGuiFileDialog::Instance()->IsOk == true)
 			{
@@ -1193,20 +1208,23 @@ void CrateApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::ve
 		}
 		ImGui::EndMainMenuBar();
 	}
-
-	if (console_open)
-	{
-		console->Draw("Trigger Console", &console_open);
-	}
-
+	static int height = 250-18;
+	ImGui::SetNextWindowSize(ImVec2(this->mClientWidth, height));
+	ImGui::SetNextWindowCollapsed(false);
+	ImGui::SetNextWindowPos(ImVec2(0, this->mClientHeight- height));
+	console->Draw("Trigger Console", &console_open);
+	
+	ImGui::SetNextWindowSize(ImVec2(220, 550));
+	ImGui::SetNextWindowCollapsed(false);
+	ImGui::SetNextWindowPos(ImVec2(0, 18));
 	ImGui::Begin("World");
-	for (auto w : worlds)
+	for (auto& w : worlds)
 	{
 		if (ImGui::TreeNode(w->get_name().c_str()))
 		{
 			selected_world = w;
 			auto tmp = w->get_components<trigger::actor>();
-			for (auto i : tmp)
+			for (auto& i : tmp)
 			{
 				if (ImGui::Selectable(i->name.c_str()))
 				{
@@ -1216,11 +1234,13 @@ void CrateApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::ve
 			ImGui::TreePop();
 		}
 	}
-
 	ImGui::End();
 
 	if (target != nullptr)
 	{
+		ImGui::SetNextWindowSize(ImVec2(220, 550));
+		ImGui::SetNextWindowCollapsed(false);
+		ImGui::SetNextWindowPos(ImVec2(this->mClientWidth -220, 18));
 		if (ImGui::Begin("Controller"))
 		{
 			if (ImGui::BeginMenu("Actions", "some Action for this Object"))

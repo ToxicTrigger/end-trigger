@@ -2,6 +2,7 @@
 #include <string>
 #include <Windows.h>
 #include <tchar.h>
+#include "trigger_tools.h"
 
 namespace trigger
 {
@@ -15,9 +16,14 @@ namespace trigger
 				STARTUPINFO info = { 0 };
 				info.cb = sizeof(STARTUPINFO);
 				PROCESS_INFORMATION pinfo;
-				std::string com = "../tools/texconv " + filename + " -pmalpha -m 1 -f BC3_UNORM -y";
+				std::string com = "../tools/texconv " + filename + " -alpha -m 1 -f BC3_UNORM -y";
 				std::wstring c(com.begin(), com.end());
 				CreateProcess(NULL, (LPTSTR)c.c_str(), NULL, NULL, false, 0, NULL, NULL, &info, &pinfo);
+			}
+			else
+			{ 
+
+				ASSERT(false, "Can't Find Texture! %s", filename.c_str());
 			}
 		}
 	}
