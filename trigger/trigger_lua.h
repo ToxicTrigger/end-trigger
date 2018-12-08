@@ -197,14 +197,17 @@ namespace trigger
 		{
 			if (close == false)
 			{
-				if (lua_getglobal(tlua::L, "update"))
+				if (is_inited)
 				{
-					lua_pushnumber(tlua::L, lua_Number(delta));
-					lua_pcall(tlua::L, 1, 0, 0);
-				}
-				else
-				{
-					tlua::cmd->AddLog("[lua-err] Can't find update() in lua file");
+					if (lua_getglobal(tlua::L, "update"))
+					{
+						lua_pushnumber(tlua::L, lua_Number(delta));
+						lua_pcall(tlua::L, 1, 0, 0);
+					}
+					else
+					{
+						tlua::cmd->AddLog("[lua-err] Can't find update() in lua file");
+					}
 				}
 			}
 		}
@@ -295,7 +298,7 @@ namespace trigger
 			tlua::world->add(t);
 
 			lua_pushstring(L, name);
-			return 0;
+			return 1;
 		}
 
 		//set rotate actor
@@ -378,19 +381,26 @@ namespace trigger
 		//rotate actor
 		static int t_rotation(lua_State *L)
 		{
-			std::string name = lua_tostring(L, 1);
-			float x = (float)(lua_tonumber(L, 2));
-			float y = (float)lua_tonumber(L, 3);
-			float z = (float)lua_tonumber(L, 4);
-			auto actors = tlua::world->get_components <trigger::actor>();
-			for (auto a : actors)
+			if (lua_status(L) == LUA_OK)
 			{
-				if (a->name.compare(name) == 0)
+				std::string name = lua_tostring(L, 1);
+				float x = (float)(lua_tonumber(L, 2));
+				float y = (float)lua_tonumber(L, 3);
+				float z = (float)lua_tonumber(L, 4);
+				auto actors = tlua::world->get_components <trigger::actor>();
+				for (auto a : actors)
 				{
-					a->s_transform.rotation.x += x;
-					a->s_transform.rotation.y += y;
-					a->s_transform.rotation.z += z;
+					if (a->name.compare(name) == 0)
+					{
+						a->s_transform.rotation.x += x;
+						a->s_transform.rotation.y += y;
+						a->s_transform.rotation.z += z;
+					}
 				}
+			}
+			else 
+			{
+				cmd->AddLog("[lua-err] not initialized lua.");
 			}
 			return 0;
 		}

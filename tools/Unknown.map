@@ -2,53 +2,9 @@
 	use_thread = true
 	gravity = -9.8000001907348633
 	type = "map"
-	name = "hell world"
+	name = "Unknown"
 	[setting."trigger::component_world"]
 		[setting."trigger::component_world"."trigger::component"]
 			time_scale = ["float", "1"]
 			active = ["bool", "1"]
-["hell world"]
-	["hell world".actor0]
-		["hell world".actor0."trigger::component"]
-			time_scale = ["float", "1"]
-			active = ["bool", "1"]
-			["hell world".actor0."trigger::component".rotation]
-				["hell world".actor0."trigger::component".rotation."trigger::vec"]
-					x = 0.00000000000000000
-					y = 0.00000000000000000
-					z = 0.00000000000000000
-					w = 0.00000000000000000
-			["hell world".actor0."trigger::component".position]
-				["hell world".actor0."trigger::component".position."trigger::vec"]
-					x = 0.00000000000000000
-					y = 0.00000000000000000
-					z = 0.00000000000000000
-					w = 0.00000000000000000
-			["hell world".actor0."trigger::component".scale]
-				["hell world".actor0."trigger::component".scale."trigger::vec"]
-					x = 1.0000000000000000
-					y = 1.0000000000000000
-					z = 1.0000000000000000
-					w = 0.00000000000000000
-	["hell world".234za]
-		["hell world".234za."trigger::component"]
-			time_scale = ["float", "1"]
-			active = ["bool", "1"]
-			["hell world".234za."trigger::component".rotation]
-				["hell world".234za."trigger::component".rotation."trigger::vec"]
-					x = 0.00000000000000000
-					y = 0.00000000000000000
-					z = 0.00000000000000000
-					w = 0.00000000000000000
-			["hell world".234za."trigger::component".position]
-				["hell world".234za."trigger::component".position."trigger::vec"]
-					x = 0.00000000000000000
-					y = 0.00000000000000000
-					z = 0.00000000000000000
-					w = 0.00000000000000000
-			["hell world".234za."trigger::component".scale]
-				["hell world".234za."trigger::component".scale."trigger::vec"]
-					x = 1.0000000000000000
-					y = 1.0000000000000000
-					z = 1.0000000000000000
-					w = 0.00000000000000000
+[Unknown]

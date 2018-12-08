@@ -89,7 +89,15 @@ int D3DApp::Run()
 			mTimer.Tick();
 
 			if (!mAppPaused)
-			{
+			{	
+				elapsedTicks = mTimer.DeltaTime() - (float)currentTicks;
+				if (1000 / (float)elapsedTicks > FPS)
+				{
+					Sleep(interval - elapsedTicks);
+				}
+				elapsedTicks = mTimer.DeltaTime() - (float)currentTicks;
+				currentTicks += elapsedTicks;
+
 				CalculateFrameStats();
 				Update(mTimer);
 				Draw(mTimer);
@@ -415,8 +423,8 @@ bool D3DApp::InitMainWindow()
 	int width = R.right - R.left;
 	int height = R.bottom - R.top;
 
-	mhMainWnd = CreateWindow(L"MainWnd", mMainWndCaption.c_str(),
-		WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, width, height, 0, 0, mhAppInst, 0);
+	mhMainWnd = CreateWindow(L"MainWnd", mMainWndCaption.c_str(), WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, width, height, 0, 0, mhAppInst, 0);
+
 	if (!mhMainWnd)
 	{
 		MessageBox(0, L"CreateWindow Failed.", 0, 0);

@@ -8,15 +8,11 @@
 -- t_new_actor( "name" ) -> return "name"
 -- t_print("message")
 
-actor = t_new_actor("tt")
-
 function init() --init lua
-	msg = string.format("%s are mewoo", actor)
-	t_print(msg)
+	t_print("Hello")
 end
 
 function update(delta) --Update every frame
-	t_rotation(actor, 0.2 * delta, -0.2 * delta, 1 * delta)
 end
 
 function destroy() --When Destroy
